@@ -92,6 +92,16 @@ function pmprorate_pmpro_checkout_level($level)
 			(a) What they should pay for new level = $level->billing_amount * $per_left.
 			(b) What they should have paid for current level = $clevel->billing_amount * $per_passed.
 			What they need to pay = (a) + (b) - (what they already paid)
+			
+			If the number is negative, this would technically require a credit be given to the customer,
+			but we don't currently have an easy way to do that across all gateways so we just 0 out the cost.
+			
+			This is the method used in the code below.
+			
+			An alternative calculation that comes up with the same number (but may be easier to understand) is:
+			(a) What they should pay for new level = $level->billing_amount * $per_left.
+			(b) Their credit for cancelling early = $clevel->billing_amount * $per_left.
+			What they need to pay = (a) - (b)
 		*/
 		$new_level_cost = $level->billing_amount * $per_left;
 		$old_level_cost = $clevel->billing_amount * $per_passed;
