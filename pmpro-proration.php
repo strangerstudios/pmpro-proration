@@ -3,7 +3,7 @@
 Plugin Name: Paid Memberships Pro - Proration Add On
 Plugin URI: http://www.paidmembershipspro.com/wp/pmpro-proration/
 Description: Custom Prorating Code for Paid Memberships Pro
-Version: .2
+Version: .3
 Author: Stranger Studios
 Author URI: http://www.strangerstudios.com
 */
