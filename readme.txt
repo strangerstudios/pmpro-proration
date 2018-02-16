@@ -2,8 +2,8 @@
 Contributors: strangerstudios
 Tags: pmpro, paid memberships pro, members, memberships, prorated, prorate, proration, upgrade, downgrade
 Requires at least: 3.0
-Tested up to: 4.5
-Stable tag: .2
+Tested up to: 4.7
+Stable tag: .3
 
 Simple proration for membership upgrades and downgrades to maintain a member's payment date and adjust initial payment at membership checkout.
 
@@ -21,7 +21,15 @@ A limitation of this code is that if a member upgrades twice within one pay peri
 1. Upload the `pmpro-proration` folder to the `/wp-content/plugins/` directory.
 1. Activate the plugin through the 'Plugins' menu in WordPress.
 
-== Changelog == 
+== Changelog ==
+= .3 =
+* BUG/ENHANCEMENT: Remove unneeded quotes for startdate in pmpro_checkout_start_date filter
+* ENHANCEMENT: WordPress code style
+* ENHANCEMENT: Wrap database queries in $wpdb->prepare()
+* ENHANCEMENT: Use date_i18n() consistently
+* ENHANCEMENT: Use wpdb->update() in place of raw SQL
+* ENHANCEMENT: Make translation ready
+
 = .2 =
 * Downgrade function updated to assume level order based on initial payments. Be sure to edit this to your needs.
 * Fixed issue where the existing subscription date was not being used.
