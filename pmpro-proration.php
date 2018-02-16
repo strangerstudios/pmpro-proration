@@ -95,8 +95,8 @@ function pmprorate_pmpro_checkout_level($level)
 		*/
 		$new_level_cost = $level->billing_amount * $per_left;
 		$old_level_cost = $clevel->billing_amount * $per_passed;
-		
-		$level->initial_payment = min($level->initial_payment, round($new_level_cost + $old_level_cost - $morder->total, 2));
+	
+		$level->initial_payment = min($level->initial_payment, round($new_level_cost + $old_level_cost - $morder->subtotal, 2));
 		
 		//just in case we have a negative payment
 		if($level->initial_payment < 0)
