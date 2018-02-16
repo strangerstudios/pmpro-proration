@@ -2,7 +2,7 @@
 Contributors: strangerstudios
 Tags: pmpro, paid memberships pro, members, memberships, prorated, prorate, proration, upgrade, downgrade
 Requires at least: 3.0
-Tested up to: 4.7
+Tested up to: 4.9.4
 Stable tag: .3
 
 Simple proration for membership upgrades and downgrades to maintain a member's payment date and adjust initial payment at membership checkout.
@@ -23,7 +23,12 @@ A limitation of this code is that if a member upgrades twice within one pay peri
 
 == Changelog ==
 = .3 =
-* BUG/ENHANCEMENT: Remove unneeded quotes for startdate in pmpro_checkout_start_date filter
+* IMPORTANT NOTE: The logic and math for prorating has been updated. See the changelog below and our blog post here (URL) for more information.
+* BUG FIX/ENHANCEMENT: Now using the subtotal (pretax amount) when calculating credits for prorating.
+* BUG FIX/ENHANCEMENT: Added pmprorate_trim_timestamp function and using it so proration calculations are more consistent day to day.
+* BUG FIX/ENHANCEMENT: Remove unneeded quotes for startdate in pmpro_checkout_start_date filter
+* BUG FIX/ENHANCEMENT: Added pmprorate_have_same_payment_period function and using it when deciding which proration option to use.
+* BUG FIX/ENHANCEMENT: The logic for how the profile start date is adjusted has been changed when checking out for a level with a different pay period. In these cases, the start date is not adjusted. By default, the new subscription starts after one pay period (based on the new level the user is checking out for).
 * ENHANCEMENT: WordPress code style
 * ENHANCEMENT: Wrap database queries in $wpdb->prepare()
 * ENHANCEMENT: Use date_i18n() consistently
