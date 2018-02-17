@@ -23,7 +23,7 @@ A limitation of this code is that if a member upgrades twice within one pay peri
 
 == Changelog ==
 = .3 =
-* IMPORTANT NOTE: The logic and math for prorating has been updated. See the changelog below and our blog post here (URL) for more information.
+* IMPORTANT NOTE: The logic and math for prorating has been updated. See the changelog below and our blog post here (https://www.paidmembershipspro.com/proration-add-on-update-v-3/) for more information.
 * BUG FIX/ENHANCEMENT: Now using the subtotal (pretax amount) when calculating credits for prorating.
 * BUG FIX/ENHANCEMENT: Added pmprorate_trim_timestamp function and using it so proration calculations are more consistent day to day.
 * BUG FIX/ENHANCEMENT: Remove unneeded quotes for startdate in pmpro_checkout_start_date filter
