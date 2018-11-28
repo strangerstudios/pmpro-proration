@@ -3,7 +3,7 @@
 Plugin Name: Paid Memberships Pro - Proration Add On
 Plugin URI: http://www.paidmembershipspro.com/wp/pmpro-proration/
 Description: Custom Prorating Code for Paid Memberships Pro
-Version: .3
+Version: .3.1
 Author: Stranger Studios
 Author URI: http://www.strangerstudios.com
 */
@@ -62,11 +62,18 @@ function pmprorate_trim_timestamp($timestamp, $format = 'Y-m-d') {
  * @todo : TODO MMPU: getLastMemberOrder and pmpro_next_payment need to check based on level.
  */
 function pmprorate_pmpro_checkout_level( $level ) {	
+	// Bail if no level.
+	if ( empty( $level ) ) {
+		return $level;
+	}
+	
 	// can only prorate if they already have a level
 	if ( pmpro_hasMembershipLevel() ) {
 		global $current_user;
 		$clevel = $current_user->membership_level;
-
+		
+		d( $clevel );
+		
 		$morder = new MemberOrder();
 		$morder->getLastMemberOrder( $current_user->ID, array( 'success', '', 'cancelled' ) );
 

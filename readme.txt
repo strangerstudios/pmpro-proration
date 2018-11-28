@@ -3,7 +3,7 @@ Contributors: strangerstudios
 Tags: pmpro, paid memberships pro, members, memberships, prorated, prorate, proration, upgrade, downgrade
 Requires at least: 3.0
 Tested up to: 4.9.4
-Stable tag: .3
+Stable tag: .3.1
 
 Simple proration for membership upgrades and downgrades to maintain a member's payment date and adjust initial payment at membership checkout.
 
@@ -22,6 +22,9 @@ A limitation of this code is that if a member upgrades twice within one pay peri
 1. Activate the plugin through the 'Plugins' menu in WordPress.
 
 == Changelog ==
+= .3.1 =
+* BUG FIX: Added a check to the filter of pmpro_checkout_level to bail if no level.
+
 = .3 =
 * IMPORTANT NOTE: The logic and math for prorating has been updated. See the changelog below and our blog post here (https://www.paidmembershipspro.com/proration-add-on-update-v-3/) for more information.
 * BUG FIX/ENHANCEMENT: Now using the subtotal (pretax amount) when calculating credits for prorating.
