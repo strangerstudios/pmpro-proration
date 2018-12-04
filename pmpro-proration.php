@@ -72,8 +72,6 @@ function pmprorate_pmpro_checkout_level( $level ) {
 		global $current_user;
 		$clevel = $current_user->membership_level;
 		
-		d( $clevel );
-		
 		$morder = new MemberOrder();
 		$morder->getLastMemberOrder( $current_user->ID, array( 'success', '', 'cancelled' ) );
 
