@@ -91,7 +91,10 @@ function pmprorate_pmpro_checkout_level( $level ) {
 			*/
 			$level->initial_payment = 0;
 			global $pmpro_checkout_old_level;
-			$pmpro_checkout_old_level = $clevel;			
+			$pmpro_checkout_old_level = $clevel;
+			
+			//make sure payment date stays the same
+			add_filter( 'pmpro_profile_start_date', 'pmprorate_set_startdate_to_next_payment_date', 10, 2 );		
 		} elseif( pmprorate_have_same_payment_period( $clevel->id, $level->id ) ) {
 			/*
 				Upgrade with same billing period in a nutshell:
