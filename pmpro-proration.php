@@ -359,6 +359,11 @@ function pmprorate_pmpro_checkout_start_date_keep_startdate( $startdate, $user_i
  * When checking out with a discount code, applies proration to the message displayed to users
  */
 function pmprorate_applydiscountcode_return_js( $discount_code, $discount_code_id, $level_id, $code_level ) {
+	if ( empty( $code_level ) ) {
+		// there was an error, so just return
+		return;
+	}
+	
 	$code_level = pmprorate_pmpro_checkout_level( $code_level );
 	?>
 		jQuery('#pmpro_level_cost').html('<p><?php printf(__('The <strong>%s</strong> code has been applied to your order.', 'paid-memberships-pro' ), $discount_code);?></p><p><?php echo pmpro_no_quotes(pmpro_getLevelCost($code_level), array('"', "'", "\n", "\r"))?><?php echo pmpro_no_quotes(pmpro_getLevelExpiration($code_level), array('"', "'", "\n", "\r"))?></p>');
