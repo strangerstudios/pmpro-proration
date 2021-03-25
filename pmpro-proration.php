@@ -114,7 +114,7 @@ function pmprorate_pmpro_checkout_level( $level ) {
 			
 			$days_passed = ceil( ( $today - $payment_date ) / 3600 / 24 );
 			$per_passed = $days_passed / $days_in_period;        //as a % (decimal)
-			$per_left   = 1 - $per_passed;
+			$per_left   = max( 1 - $per_passed, 0 );
 			
 			/*
 				Now figure out how to adjust the price.
@@ -161,10 +161,10 @@ function pmprorate_pmpro_checkout_level( $level ) {
 			}
 			
 			$days_passed = ceil( ( $today - $payment_date ) / 3600 / 24 );
-			$per_passed = $days_passed / $days_in_period;        //as a % (decimal)			
-			$per_left   = 1 - $per_passed;
-			$credit = $morder->subtotal * $per_left;			
-			
+			$per_passed  = $days_passed / $days_in_period;        //as a % (decimal)			
+			$per_left    = max( 1 - $per_passed, 0 );
+			$credit      = $morder->subtotal * $per_left;			
+
 			$level->initial_payment = round( $level->initial_payment - $credit, 2 );
 
 			//just in case we have a negative payment
