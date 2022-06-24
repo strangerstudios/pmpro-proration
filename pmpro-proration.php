@@ -428,7 +428,7 @@ function pmprorate_pmpro_confirmation_message( $message, $invoice ) {
 			$message .= sprintf(
 				__("You will be downgraded to %s on %s", "pmpro-proration"),
 				            $dlevel->name,
-				            date_i18n( get_option( "date_format" ), strtotime( $downgrading['date'], current_time( 'timestamp' ) ) )
+				            date_i18n( get_option( "date_format" ), $downgrading['date'] )
             );
 			$message .= "</p>";
 		}
@@ -455,7 +455,7 @@ function pmprorate_the_content( $content ) {
 			$downgrade_message .= sprintf(
 				__( "You will be downgraded to %s on %s.", "pmpro-proration" ),
 				$downgrade_level->name,
-				date_i18n( get_option( "date_format" ), strtotime( $downgrading['date'], current_time( 'timestamp' ) ) )
+				date_i18n( get_option( "date_format" ), $downgrading['date'] )
 			);
 
 			$content = $downgrade_message . $content;
