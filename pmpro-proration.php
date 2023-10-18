@@ -16,8 +16,8 @@ Author URI: http://www.strangerstudios.com
  * site.
  */
 function pmprorate_isDowngrade( $old, $new ) {
-	$old_level = pmpro_getLevel( $old );
-	$new_level = pmpro_getLevel( $new );
+	$old_level = is_object( $old ) ? $old : pmpro_getLevel( $old );
+	$new_level = is_object( $new ) ? $new : pmpro_getLevel( $new );
 
 	if ( $old_level->initial_payment > $new_level->initial_payment ) {
 		$r = true;
@@ -25,7 +25,18 @@ function pmprorate_isDowngrade( $old, $new ) {
 		$r = false;
 	}
 
-	$r = apply_filters( "pmpro_is_downgrade", $r, $old, $new );
+	/**
+	 * Filter for whether or not a level change is a downgrade.
+	 *
+	 * @param bool $r True if the level change is a downgrade, false otherwise.
+	 * @param int $old_level_id The ID of the old level. Ideally this should be an object, but need to pass the ID for backwards compatibility.
+	 * @param int $new_level_id The ID of the new level. Ideally this should be an object, but need to pass the ID for backwards compatibility.
+	 *
+	 * @since TBD
+	 *
+	 * @return bool True if the level change is a downgrade, false otherwise.
+	 */
+	$r = apply_filters( "pmpro_is_downgrade", $r, $old->id, $new->id );
 
 	return $r;
 }
@@ -35,8 +46,8 @@ function pmprorate_isDowngrade( $old, $new ) {
  *
  */
 function pmprorate_have_same_payment_period( $old, $new ) {
-	$old_level = pmpro_getLevel( $old );
-	$new_level = pmpro_getLevel( $new );
+	$old_level = is_object( $old ) ? $old : pmpro_getLevel( $old );
+	$new_level = is_object( $new ) ? $new : pmpro_getLevel( $new );
 
 	if ( $old_level->cycle_number == $new_level->cycle_number &&
 		 $old_level->cycle_period == $new_level->cycle_period ) {
@@ -45,7 +56,18 @@ function pmprorate_have_same_payment_period( $old, $new ) {
 		$r = false;
 	}
 
-	$r = apply_filters( "pmpro_have_same_payment_period", $r, $old, $new );
+	/**
+	 * Filter for whether or not two levels have the same payment period.
+	 *
+	 * @param bool $r True if the levels have the same payment period, false otherwise.
+	 * @param int $old_level_id The ID of the old level. Ideally this should be an object, but need to pass the ID for backwards compatibility.
+	 * @param int $new_level_id The ID of the new level. Ideally this should be an object, but need to pass the ID for backwards compatibility.
+	 *
+	 * @since TBD
+	 *
+	 * @return bool True if the levels have the same payment period, false otherwise.
+	 */
+	$r = apply_filters( "pmpro_have_same_payment_period", $r, $old->id, $new->id );
 
 	return $r;
 }
@@ -81,7 +103,7 @@ function pmprorate_pmpro_checkout_level( $level ) {
 		}
 		
 		// different prorating rules if they are downgrading, upgrading with same billing period, or upgrading with a different billing period
-		if ( pmprorate_isDowngrade( $clevel->id, $level->id ) ) {
+		if ( pmprorate_isDowngrade( $clevel, $level ) ) {
 			/*
 				Downgrade rule in a nutshell:
 				1. Charge $0 now.
@@ -95,7 +117,7 @@ function pmprorate_pmpro_checkout_level( $level ) {
 			
 			//make sure payment date stays the same
 			add_filter( 'pmpro_profile_start_date', 'pmprorate_set_startdate_to_next_payment_date', 10, 2 );		
-		} elseif( pmprorate_have_same_payment_period( $clevel->id, $level->id ) ) {
+		} elseif( pmprorate_have_same_payment_period( $clevel, $level ) ) {
 			/*
 				Upgrade with same billing period in a nutshell:
 				1. Calculate the initial payment to cover the remaining time in the current pay period.
