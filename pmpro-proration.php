@@ -8,6 +8,14 @@ Author: Stranger Studios
 Author URI: http://www.strangerstudios.com
 */
 
+/**
+ * Load the languages folder for translations.
+ */
+function pmprorate_load_plugin_text_domain() {
+	load_plugin_textdomain( 'pmpro-proration', false, basename( dirname( __FILE__ ) ) . '/languages' );
+}
+add_action( 'plugins_loaded', 'pmprorate_load_plugin_text_domain' );
+
 /** 
  * Function to check if a level change is a downgrade.	
  *
@@ -392,7 +400,7 @@ function pmprorate_applydiscountcode_return_js( $discount_code, $discount_code_i
 	
 	$code_level = pmprorate_pmpro_checkout_level( $code_level );
 	?>
-		jQuery('#pmpro_level_cost').html('<p><?php printf(__('The <strong>%s</strong> code has been applied to your order.', 'paid-memberships-pro' ), $discount_code);?></p><p><?php echo pmpro_no_quotes(pmpro_getLevelCost($code_level), array('"', "'", "\n", "\r"))?><?php echo pmpro_no_quotes(pmpro_getLevelExpiration($code_level), array('"', "'", "\n", "\r"))?></p>');
+		jQuery('#pmpro_level_cost').html('<p><?php printf( esc_html__('The %s code has been applied to your order.', 'pmpro-proration' ), '<strong>' . esc_html( $discount_code ) . '</strong>' );?></p><p><?php echo pmpro_no_quotes(pmpro_getLevelCost($code_level), array('"', "'", "\n", "\r"))?><?php echo pmpro_no_quotes(pmpro_getLevelExpiration($code_level), array('"', "'", "\n", "\r"))?></p>');
 	<?php
 }
 
@@ -427,7 +435,7 @@ function pmprorate_pmpro_after_checkout( $user_id ) {
 				array( 'membership_id' => $new_level->id, 'user_id' => $user_id, 'status' => 'active' )
 			)
 		) {
-			pmpro_setMessage( __( 'Problem updating membership information. Please report this to the webmaster.', 'pmpro-proration' ), 'error' );
+			pmpro_setMessage( esc_html__( 'Problem updating membership information. Please report this to the webmaster.', 'pmpro-proration' ), 'error' );
 		};
 	} else {
 		delete_user_meta( $user_id, "pmpro_change_to_level" );
@@ -447,11 +455,13 @@ function pmprorate_pmpro_confirmation_message( $message, $invoice ) {
 			$dlevel = pmpro_getLevel( $downgrading['level'] );
 
 			$message .= "<p>";
-			$message .= sprintf(
-				__("You will be downgraded to %s on %s", "pmpro-proration"),
-				            $dlevel->name,
-				            date_i18n( get_option( "date_format" ), $downgrading['date'] )
-            );
+			$message .= esc_html(
+				sprintf(
+					__("You will be downgraded to %s on %s", "pmpro-proration"),
+				    $dlevel->name,
+				    date_i18n( get_option( "date_format" ), $downgrading['date'] )
+				)
+			);
 			$message .= "</p>";
 		}
 	}
@@ -473,11 +483,13 @@ function pmprorate_the_content( $content ) {
 		if ( ! empty( $downgrading ) ) {
 			$downgrade_level = pmpro_getLevel( $downgrading['level'] );
 
-			$downgrade_message = "<p><strong>" . __( "Important Note:", "pmpro-proration" ) . "</strong>";
-			$downgrade_message .= sprintf(
-				__( "You will be downgraded to %s on %s.", "pmpro-proration" ),
-				$downgrade_level->name,
-				date_i18n( get_option( "date_format" ), $downgrading['date'] )
+			$downgrade_message = "<p><strong>" . esc_html__( "Important Note:", "pmpro-proration" ) . "</strong>";
+			$downgrade_message .= esc_html(
+				sprintf(
+					__( "You will be downgraded to %s on %s.", "pmpro-proration" ),
+					$downgrade_level->name,
+					date_i18n( get_option( "date_format" ), $downgrading['date'] )
+				)
 			);
 
 			$content = $downgrade_message . $content;
@@ -544,8 +556,8 @@ add_filter( 'pmpro_mmpu_incompatible_add_ons', 'pmproprorate_mmpu_incompatible_a
 function pmproproate_plugin_row_meta( $links, $file ) {
 	if ( strpos( $file, 'pmpro-proration.php' ) !== false ) {
 		$new_links = array(
-			'<a href="' . esc_url( 'http://www.paidmembershipspro.com/add-ons/plus-add-ons/proration-prorate-membership/' ) . '" title="' . esc_attr( __( 'View Documentation', 'pmpro' ) ) . '">' . __( 'Docs', 'pmpro' ) . '</a>',
-			'<a href="' . esc_url( 'http://paidmembershipspro.com/support/' ) . '" title="' . esc_attr( __( 'Visit Customer Support Forum', 'pmpro' ) ) . '">' . __( 'Support', 'pmpro' ) . '</a>',
+			'<a href="' . esc_url( 'http://www.paidmembershipspro.com/add-ons/plus-add-ons/proration-prorate-membership/' ) . '" title="' . esc_attr( __( 'View Documentation', 'pmpro-proration' ) ) . '">' . esc_html__( 'Docs', 'pmpro-proration' ) . '</a>',
+			'<a href="' . esc_url( 'http://paidmembershipspro.com/support/' ) . '" title="' . esc_attr( __( 'Visit Customer Support Forum', 'pmpro-proration' ) ) . '">' . esc_html__( 'Support', 'pmpro-proration' ) . '</a>',
 		);
 		$links     = array_merge( $links, $new_links );
 	}
