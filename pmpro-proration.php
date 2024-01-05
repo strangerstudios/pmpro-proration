@@ -92,6 +92,7 @@ function pmprorate_pmpro_checkout_level( $level ) {
 			$level->initial_payment = 0;
 			global $pmpro_checkout_old_level;
 			$pmpro_checkout_old_level = $clevel;
+			$pmpro_checkout_old_level->next_payment = pmprorate_trim_timestamp( pmpro_next_payment( $current_user->ID ) );
 			
 			//make sure payment date stays the same
 			add_filter( 'pmpro_profile_start_date', 'pmprorate_set_startdate_to_next_payment_date', 10, 2 );		
@@ -427,7 +428,7 @@ function pmprorate_pmpro_confirmation_message( $message, $invoice ) {
 			$message .= sprintf(
 				__("You will be downgraded to %s on %s", "pmpro-proration"),
 				            $dlevel->name,
-				            date_i18n( get_option( "date_format" ), strtotime( $downgrading['date'], current_time( 'timestamp' ) ) )
+				            date_i18n( get_option( "date_format" ), $downgrading['date'] )
             );
 			$message .= "</p>";
 		}
@@ -448,12 +449,13 @@ function pmprorate_the_content( $content ) {
 		$downgrading = get_user_meta( $current_user->ID, "pmpro_change_to_level", true );
 
 		if ( ! empty( $downgrading ) ) {
+			$downgrade_level = pmpro_getLevel( $downgrading['level'] );
 
 			$downgrade_message = "<p><strong>" . __( "Important Note:", "pmpro-proration" ) . "</strong>";
 			$downgrade_message .= sprintf(
 				__( "You will be downgraded to %s on %s.", "pmpro-proration" ),
-				$downgrading['level']->name,
-				date_i18n( get_option( "date_format" ), strtotime( $downgrading['date'], current_time( 'timestamp' ) ) )
+				$downgrade_level->name,
+				date_i18n( get_option( "date_format" ), $downgrading['date'] )
 			);
 
 			$content = $downgrade_message . $content;
