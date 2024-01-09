@@ -424,6 +424,8 @@ add_action( 'pmpro_cron_expire_memberships', 'pmproproate_daily_check_for_member
 }
 add_filter( 'pmpro_mmpu_incompatible_add_ons', 'pmproprorate_mmpu_incompatible_add_ons' );
 
+include_once( plugin_dir_path( __FILE__ ) . 'includes/deprecated.php' );
+
 /**
  * Add links to the plugin row meta
  */
