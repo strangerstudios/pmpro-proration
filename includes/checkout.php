@@ -88,119 +88,127 @@ function pmprorate_pmpro_checkout_level( $level ) {
 		return $level;
 	}
 	
-	// can only prorate if they already have a level
+	// Can only prorate if they already have a level.
+	// In PMPro v3.0+, this will only grab a level in the same "one level per group" membership group.
 	$clevel_id = pmproprorate_get_level_id_being_switched_from( $current_user->ID, $level->id );
-	if ( ! empty( $clevel_id ) ) {
-		$clevel = pmpro_getSpecificMembershipLevelForUser( $current_user->ID, $clevel_id );
-		
-		$morder = new MemberOrder();
-		$morder->getLastMemberOrder( $current_user->ID, array( 'success', '', 'cancelled' ) );
+	if ( empty( $clevel_id ) ) {
+		return $level;
+	}
 
-		// no prorating needed if they don't have an order (were given the level by an admin/etc)
-		if ( empty( $morder->timestamp ) ) {
+	// Get the full level object.
+	$clevel = pmpro_getSpecificMembershipLevelForUser( $current_user->ID, $clevel_id );
+	if ( empty( $clevel ) ) {
+		return $level;
+	}
+
+	// Get the last order.
+	$morder = new MemberOrder();
+	$morder->getLastMemberOrder( $current_user->ID, array( 'success', '', 'cancelled' ) );
+
+	// no prorating needed if they don't have an order (were given the level by an admin/etc)
+	if ( empty( $morder->timestamp ) ) {
+		return $level;
+	}
+	
+	// different prorating rules if they are downgrading, upgrading with same billing period, or upgrading with a different billing period
+	if ( pmprorate_isDowngrade( $clevel, $level ) ) {
+		/*
+			* Downgrade rule in a nutshell:
+			* 1. Charge $0 now.
+			* 2. Set up new subscription to start billing on the current subscription's next payment date.
+			* 3. Set up delayed downgrade to downgrade the user's membership on the next payment date/expiration date.
+			*
+			* Note: For PMPro versions before 3.0, we need to call pmprorate_legacy_downgrade_set_up() to set up the downgrade.
+			*/
+		$level->initial_payment = 0;
+
+		// If purchasing a subscription, make sure payment date stays the same.
+		add_filter( 'pmpro_profile_start_date', 'pmprorate_set_startdate_to_next_payment_date', 10, 2 );
+
+		// Set up the delayed downgrade.
+		$pmprorate_is_downgrade = true;
+
+		// For PMPro versions before 3.0, we need to call pmprorate_legacy_downgrade_set_up() to set up the downgrade.
+		if ( ! class_exists( 'PMPro_Subscription' ) ) {
+			pmprorate_legacy_downgrade_set_up( $clevel );
+		}
+	} elseif( pmprorate_have_same_payment_period( $clevel, $level ) ) {
+		/*
+			Upgrade with same billing period in a nutshell:
+			1. Calculate the initial payment to cover the remaining time in the current pay period.
+			2. Setup subscription to start on next payment date at the new rate.
+		*/
+		$payment_date = pmprorate_trim_timestamp( $morder->timestamp );
+		$next_payment_date = pmprorate_trim_timestamp( pmpro_next_payment( $current_user->ID ) );
+		$today = pmprorate_trim_timestamp( current_time( 'timestamp' ) );
+
+		$days_in_period = ceil( ( $next_payment_date - $payment_date ) / 3600 / 24 );
+
+		//if no days in period (next payment should have happened already) return level with no change to avoid divide by 0
+		if ( $days_in_period <= 0 ) {
 			return $level;
 		}
 		
-		// different prorating rules if they are downgrading, upgrading with same billing period, or upgrading with a different billing period
-		if ( pmprorate_isDowngrade( $clevel, $level ) ) {
-			/*
-			 * Downgrade rule in a nutshell:
-			 * 1. Charge $0 now.
-			 * 2. Set up new subscription to start billing on the current subscription's next payment date.
-			 * 3. Set up delayed downgrade to downgrade the user's membership on the next payment date/expiration date.
-			 *
-			 * Note: For PMPro versions before 3.0, we need to call pmprorate_legacy_downgrade_set_up() to set up the downgrade.
-			 */
+		$days_passed = ceil( ( $today - $payment_date ) / 3600 / 24 );
+		$per_passed = $days_passed / $days_in_period;        //as a % (decimal)
+		$per_left   = max( 1 - $per_passed, 0 );
+		
+		/*
+			Now figure out how to adjust the price.
+			(a) What they should pay for new level = $level->billing_amount * $per_left.
+			(b) What they should have paid for current level = $clevel->billing_amount * $per_passed.
+			What they need to pay = (a) + (b) - (what they already paid)
+			
+			If the number is negative, this would technically require a credit be given to the customer,
+			but we don't currently have an easy way to do that across all gateways so we just 0 out the cost.
+			
+			This is the method used in the code below.
+			
+			An alternative calculation that comes up with the same number (but may be easier to understand) is:
+			(a) What they should pay for new level = $level->billing_amount * $per_left.
+			(b) Their credit for cancelling early = $clevel->billing_amount * $per_left.
+			What they need to pay = (a) - (b)
+		*/
+		$new_level_cost = $level->billing_amount * $per_left;
+		$old_level_cost = $clevel->billing_amount * $per_passed;
+		$level->initial_payment = min( $level->initial_payment, round( $new_level_cost + $old_level_cost - $morder->subtotal, 2 ) );
+
+		//just in case we have a negative payment
+		if ( $level->initial_payment < 0 ) {
 			$level->initial_payment = 0;
+		}
+		
+		//make sure payment date stays the same
+		add_filter( 'pmpro_profile_start_date', 'pmprorate_set_startdate_to_next_payment_date', 10, 2 );			
+	} else {
+		/*
+			Upgrade with different payment periods in a nutshell:
+			1. Apply a credit to the initial payment based on the partial period of their old level.
+			2. New subscription starts today with the initial payment and will renew one period from now based on the new level.
+		*/
+		$payment_date = pmprorate_trim_timestamp( $morder->timestamp );
+		$next_payment_date = pmprorate_trim_timestamp( pmpro_next_payment( $current_user->ID ) );
+		$today = pmprorate_trim_timestamp( current_time( 'timestamp' ) );
 
-			// If purchasing a subscription, make sure payment date stays the same.
-			add_filter( 'pmpro_profile_start_date', 'pmprorate_set_startdate_to_next_payment_date', 10, 2 );
+		$days_in_period = ceil( ( $next_payment_date - $payment_date ) / 3600 / 24 );
 
-			// Set up the delayed downgrade.
-			$pmprorate_is_downgrade = true;
+		//if no days in period (next payment should have happened already) return level with no change to avoid divide by 0
+		if ( $days_in_period <= 0 ) {
+			return $level;
+		}
+		
+		$days_passed = ceil( ( $today - $payment_date ) / 3600 / 24 );
+		$per_passed  = $days_passed / $days_in_period;        //as a % (decimal)			
+		$per_left    = max( 1 - $per_passed, 0 );
+		$credit      = $morder->subtotal * $per_left;			
 
-			// For PMPro versions before 3.0, we need to call pmprorate_legacy_downgrade_set_up() to set up the downgrade.
-			if ( ! class_exists( 'PMPro_Subscription' ) ) {
-				pmprorate_legacy_downgrade_set_up( $clevel );
-			}
-		} elseif( pmprorate_have_same_payment_period( $clevel, $level ) ) {
-			/*
-				Upgrade with same billing period in a nutshell:
-				1. Calculate the initial payment to cover the remaining time in the current pay period.
-				2. Setup subscription to start on next payment date at the new rate.
-			*/
-			$payment_date = pmprorate_trim_timestamp( $morder->timestamp );
-			$next_payment_date = pmprorate_trim_timestamp( pmpro_next_payment( $current_user->ID ) );
-			$today = pmprorate_trim_timestamp( current_time( 'timestamp' ) );
+		$level->initial_payment = round( $level->initial_payment - $credit, 2 );
 
-			$days_in_period = ceil( ( $next_payment_date - $payment_date ) / 3600 / 24 );
-
-			//if no days in period (next payment should have happened already) return level with no change to avoid divide by 0
-			if ( $days_in_period <= 0 ) {
-				return $level;
-			}
-			
-			$days_passed = ceil( ( $today - $payment_date ) / 3600 / 24 );
-			$per_passed = $days_passed / $days_in_period;        //as a % (decimal)
-			$per_left   = max( 1 - $per_passed, 0 );
-			
-			/*
-				Now figure out how to adjust the price.
-				(a) What they should pay for new level = $level->billing_amount * $per_left.
-				(b) What they should have paid for current level = $clevel->billing_amount * $per_passed.
-				What they need to pay = (a) + (b) - (what they already paid)
-				
-				If the number is negative, this would technically require a credit be given to the customer,
-				but we don't currently have an easy way to do that across all gateways so we just 0 out the cost.
-				
-				This is the method used in the code below.
-				
-				An alternative calculation that comes up with the same number (but may be easier to understand) is:
-				(a) What they should pay for new level = $level->billing_amount * $per_left.
-				(b) Their credit for cancelling early = $clevel->billing_amount * $per_left.
-				What they need to pay = (a) - (b)
-			*/
-			$new_level_cost = $level->billing_amount * $per_left;
-			$old_level_cost = $clevel->billing_amount * $per_passed;
-			$level->initial_payment = min( $level->initial_payment, round( $new_level_cost + $old_level_cost - $morder->subtotal, 2 ) );
-
-			//just in case we have a negative payment
-			if ( $level->initial_payment < 0 ) {
-				$level->initial_payment = 0;
-			}
-			
-			//make sure payment date stays the same
-			add_filter( 'pmpro_profile_start_date', 'pmprorate_set_startdate_to_next_payment_date', 10, 2 );			
-		} else {
-			/*
-				Upgrade with different payment periods in a nutshell:
-				1. Apply a credit to the initial payment based on the partial period of their old level.
-				2. New subscription starts today with the initial payment and will renew one period from now based on the new level.
-			*/
-			$payment_date = pmprorate_trim_timestamp( $morder->timestamp );
-			$next_payment_date = pmprorate_trim_timestamp( pmpro_next_payment( $current_user->ID ) );
-			$today = pmprorate_trim_timestamp( current_time( 'timestamp' ) );
-
-			$days_in_period = ceil( ( $next_payment_date - $payment_date ) / 3600 / 24 );
-
-			//if no days in period (next payment should have happened already) return level with no change to avoid divide by 0
-			if ( $days_in_period <= 0 ) {
-				return $level;
-			}
-			
-			$days_passed = ceil( ( $today - $payment_date ) / 3600 / 24 );
-			$per_passed  = $days_passed / $days_in_period;        //as a % (decimal)			
-			$per_left    = max( 1 - $per_passed, 0 );
-			$credit      = $morder->subtotal * $per_left;			
-
-			$level->initial_payment = round( $level->initial_payment - $credit, 2 );
-
-			//just in case we have a negative payment
-			if ( $level->initial_payment < 0 ) {
-				$level->initial_payment = 0;
-			}
-		}		
-	}
+		//just in case we have a negative payment
+		if ( $level->initial_payment < 0 ) {
+			$level->initial_payment = 0;
+		}
+	}		
 
 	return $level;
 }
@@ -302,13 +310,21 @@ function pmproprorate_get_level_id_being_switched_from( $user_id, $new_level_id 
 
 	// If using PMPro v3.0+, check if the user has another level in the same group.
 	if ( function_exists( 'pmpro_get_group_id_for_level' ) ) {
+		// Get the group ID for the level that we are switching to.
+		$group_id = pmpro_get_group_id_for_level( $new_level_id );
+		$group    = pmpro_get_level_group( $group_id );
+
+		// Only switching from a level if users can have multiple levels from this group at once.
+		if ( ! empty( empty( $group->allow_multiple_selections ) ) ) {
+			return null;
+		}
+
+		// Get other levels in the group of the level that we are switching to.
+		$group_level_ids = array_map( 'intval', pmpro_get_level_ids_for_group( $group_id ) );
+
 		// Get user's current levels.
 		$user_levels     = pmpro_getMembershipLevelsForUser( $user_id );
 		$user_level_ids  = array_map( 'intval', wp_list_pluck( $user_levels, 'id' ) );
-
-		// Get other levels in the group of the level that we are switching to.
-		$group_id        = pmpro_get_group_id_for_level( $new_level_id );
-		$group_level_ids = array_map( 'intval', pmpro_get_level_ids_for_group( $group_id ) );
 
 		// Intersect the two arrays to see if the user has another level in the same group.
 		$intersect = array_intersect( $user_level_ids, $group_level_ids );
