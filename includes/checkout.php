@@ -76,15 +76,22 @@ function pmprorate_trim_timestamp($timestamp, $format = 'Y-m-d') {
  * @todo : TODO MMPU: getLastMemberOrder and pmpro_next_payment need to check based on level.
  */
 function pmprorate_pmpro_checkout_level( $level ) {	
+	global $current_user, $pmprorate_is_downgrade;
+
 	// Bail if no level.
 	if ( empty( $level ) ) {
 		return $level;
 	}
+
+	// Bail if not logged in.
+	if ( empty( $current_user->ID ) ) {
+		return $level;
+	}
 	
 	// can only prorate if they already have a level
-	if ( pmpro_hasMembershipLevel() ) {
-		global $current_user;
-		$clevel = $current_user->membership_level;
+	$clevel_id = pmproprorate_get_level_id_being_switched_from( $current_user->ID, $level->id );
+	if ( ! empty( $clevel_id ) ) {
+		$clevel = pmpro_getSpecificMembershipLevelForUser( $current_user->ID, $clevel_id );
 		
 		$morder = new MemberOrder();
 		$morder->getLastMemberOrder( $current_user->ID, array( 'success', '', 'cancelled' ) );
@@ -97,19 +104,25 @@ function pmprorate_pmpro_checkout_level( $level ) {
 		// different prorating rules if they are downgrading, upgrading with same billing period, or upgrading with a different billing period
 		if ( pmprorate_isDowngrade( $clevel, $level ) ) {
 			/*
-				Downgrade rule in a nutshell:
-				1. Charge $0 now.
-				2. Allow their current membership to expire on their next payment date.
-				3. Setup new subscription to start billing on that date.
-				4. Other code in this plugin handles changing the user's level on the future date.
-			*/
+			 * Downgrade rule in a nutshell:
+			 * 1. Charge $0 now.
+			 * 2. Set up new subscription to start billing on the current subscription's next payment date.
+			 * 3. Set up delayed downgrade to downgrade the user's membership on the next payment date/expiration date.
+			 *
+			 * Note: For PMPro versions before 3.0, we need to call pmprorate_legacy_downgrade_set_up() to set up the downgrade.
+			 */
 			$level->initial_payment = 0;
-			global $pmpro_checkout_old_level;
-			$pmpro_checkout_old_level = $clevel;
-			$pmpro_checkout_old_level->next_payment = pmprorate_trim_timestamp( pmpro_next_payment( $current_user->ID ) );
-			
-			//make sure payment date stays the same
-			add_filter( 'pmpro_profile_start_date', 'pmprorate_set_startdate_to_next_payment_date', 10, 2 );		
+
+			// If purchasing a subscription, make sure payment date stays the same.
+			add_filter( 'pmpro_profile_start_date', 'pmprorate_set_startdate_to_next_payment_date', 10, 2 );
+
+			// Set up the delayed downgrade.
+			$pmprorate_is_downgrade = true;
+
+			// For PMPro versions before 3.0, we need to call pmprorate_legacy_downgrade_set_up() to set up the downgrade.
+			if ( ! class_exists( 'PMPro_Subscription' ) ) {
+				pmprorate_legacy_downgrade_set_up( $clevel );
+			}
 		} elseif( pmprorate_have_same_payment_period( $clevel, $level ) ) {
 			/*
 				Upgrade with same billing period in a nutshell:
@@ -274,30 +287,37 @@ function pmprorate_pmpro_init() {
 add_action( 'init', 'pmprorate_pmpro_init' );
 
 /**
- * After checkout, if the user downgraded, then revert to the old level and remember to change them to the new level later.
+ * Get the level ID that would be switched from if a particular level is purchased.
+ *
+ * @since TBD
+ *
+ * @param int $user_id The ID of the user.
+ * @param int $new_level_id The ID of the level that the user is trying to switch to.
+ * @return int|null The ID of the level that the user is switching from, or null if it can't be determined.
  */
-function pmprorate_pmpro_after_checkout( $user_id ) {
-	global $pmpro_checkout_old_level, $wpdb;
-	if ( ! empty( $pmpro_checkout_old_level ) && ! empty( $pmpro_checkout_old_level->next_payment ) ) {
-		$new_level = pmpro_getMembershipLevelForUser( $user_id );
+function pmproprorate_get_level_id_being_switched_from( $user_id, $new_level_id ) {
+	// Validate types.
+	$user_id = (int)$user_id;
+	$new_level_id = (int)$new_level_id;
 
-		//remember to update to this level later
-		update_user_meta( $user_id, "pmpro_change_to_level", array( "date"  => $pmpro_checkout_old_level->next_payment,
-		                                                            "level" => $new_level->id
-		) );
+	// If using PMPro v3.0+, check if the user has another level in the same group.
+	if ( function_exists( 'pmpro_get_group_id_for_level' ) ) {
+		// Get user's current levels.
+		$user_levels     = pmpro_getMembershipLevelsForUser( $user_id );
+		$user_level_ids  = array_map( 'intval', wp_list_pluck( $user_levels, 'id' ) );
 
-		//change their membership level
-		if ( false === $wpdb->update(
-				$wpdb->pmpro_memberships_users,
-				array( 'membership_id' => $pmpro_checkout_old_level->id ),
-				array( 'membership_id' => $new_level->id, 'user_id' => $user_id, 'status' => 'active' )
-			)
-		) {
-			pmpro_setMessage( esc_html__( 'Problem updating membership information. Please report this to the webmaster.', 'pmpro-proration' ), 'error' );
-		};
-	} else {
-		delete_user_meta( $user_id, "pmpro_change_to_level" );
+		// Get other levels in the group of the level that we are switching to.
+		$group_id        = pmpro_get_group_id_for_level( $new_level_id );
+		$group_level_ids = array_map( 'intval', pmpro_get_level_ids_for_group( $group_id ) );
+
+		// Intersect the two arrays to see if the user has another level in the same group.
+		$intersect = array_intersect( $user_level_ids, $group_level_ids );
+
+		// If the user has another level in the same group, set that as the level that we want to switch from.
+		return ! empty( $intersect ) ? array_shift( $intersect ) : null;
 	}
-}
 
-add_filter( 'pmpro_after_checkout', 'pmprorate_pmpro_after_checkout' );
+	// If using PMPro v2.x, just choose a membership level that the user currently has. They should only have one.
+	$user_levels = pmpro_getMembershipLevelsForUser( $user_id );
+	return ! empty( $user_levels ) ? (int)array_shift( $user_levels )->id : null;
+}
