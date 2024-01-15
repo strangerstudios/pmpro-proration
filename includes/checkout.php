@@ -76,6 +76,24 @@ function pmprorate_isDowngrade( $old, $new ) {
  *
  */
 function pmprorate_have_same_payment_period( $old, $new ) {
+	// If using PMPro v3.0+, $old_level should have data from the user's current subscription.
+	if ( class_exists( 'PMPro_Subscription' ) ) {
+		// Get the user's current subscription.
+		// If the user doesn't have a subscription, then the "payment period" is not the same.
+		$current_subscription = PMPro_Subscription::get_subscriptions_for_user( get_current_user_id(), $old->id );
+		if ( empty( $current_subscription ) ) {
+			return false;
+		}
+
+		$corrected_old_level = new stdClass();
+		$corrected_old_level->id           = $current_subscription[0]->get_membership_id();
+		$corrected_old_level->cycle_number = $current_subscription[0]->get_cycle_number();
+		$corrected_old_level->cycle_period = $current_subscription[0]->get_cycle_period();
+
+		// Override $old_level with the corrected level so that we can use the same logic as PMPro v2.x.
+		$old_level = $corrected_old_level;
+	}
+
 	$old_level = is_object( $old ) ? $old : pmpro_getLevel( $old );
 	$new_level = is_object( $new ) ? $new : pmpro_getLevel( $new );
 
