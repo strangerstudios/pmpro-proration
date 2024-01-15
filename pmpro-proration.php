@@ -30,15 +30,6 @@ global $wpdb;
 $wpdb->pmprorate_downgrades = $wpdb->prefix . 'pmprorate_downgrades';
 
 /**
- * Mark the plugin as MMPU-incompatible.
- */
-  function pmproprorate_mmpu_incompatible_add_ons( $incompatible ) {
-	$incompatible[] = 'PMPro Prorations Add On';
-	return $incompatible;
-}
-add_filter( 'pmpro_mmpu_incompatible_add_ons', 'pmproprorate_mmpu_incompatible_add_ons' );
-
-/**
  * Add links to the plugin row meta
  */
 function pmproproate_plugin_row_meta( $links, $file ) {
