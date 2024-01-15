@@ -91,7 +91,7 @@ function pmprorate_have_same_payment_period( $old, $new ) {
 		$corrected_old_level->cycle_period = $current_subscription[0]->get_cycle_period();
 
 		// Override $old_level with the corrected level so that we can use the same logic as PMPro v2.x.
-		$old_level = $corrected_old_level;
+		$old = $corrected_old_level;
 	}
 
 	$old_level = is_object( $old ) ? $old : pmpro_getLevel( $old );
@@ -129,7 +129,9 @@ function pmprorate_trim_timestamp($timestamp, $format = 'Y-m-d') {
 
 /**
  * Update the initial payment amount at checkout per prorating rules.
- * @todo : TODO MMPU: getLastMemberOrder and pmpro_next_payment need to check based on level.
+ *
+ * @param object $level The level that the user is purchasing.
+ * @return object
  */
 function pmprorate_pmpro_checkout_level( $level ) {	
 	global $current_user, $pmprorate_is_downgrade;
@@ -184,21 +186,48 @@ function pmprorate_pmpro_checkout_level( $level ) {
 		return $level;
 	}
 
-	// Get the last order.
-	$prev_order = new MemberOrder();
-	$prev_order->getLastMemberOrder( $current_user->ID, array( 'success', '', 'cancelled' ), $clevel_id );
+	// Getting the next payment date and most recent order has different logic for PMPro v2.x and v3.0+.
+	if ( class_exists( 'PMPro_Subscription' ) ) {
+		// Using PMPro v3.0+.
+		// Get the user's current subscription.
+		$current_subscription = PMPro_Subscription::get_subscriptions_for_user( get_current_user_id(), $clevel_id );
 
-	// No prorating needed if they don't have an order (were given the level by an admin/etc).
-	if ( empty( $prev_order->timestamp ) ) {
-		return $level;
+		// No prorating needed if they don't have a subscription.
+		if ( empty( $current_subscription ) ) {
+			return $level;
+		}
+
+		// Get the last payment date and next payment date.
+		$newest_orders = $current_subscription->get_orders( array( 'limit' => 1 ) );
+		if ( empty( $newest_orders ) ) {
+			return $level;
+		}
+
+		// Get the most recent order.
+		$prev_order = current( $newest_orders );
+
+		// Get the next payment date.
+		$next_payment_date = pmprorate_trim_timestamp( $current_subscription->get_next_payment_date() );
+	} else {
+		// Using PMPro v2.x.
+		// Get the last order.
+		$prev_order = new MemberOrder();
+		$prev_order->getLastMemberOrder( $current_user->ID, array( 'success', '', 'cancelled' ), $clevel_id );
+
+		// No prorating needed if they don't have an order (were given the level by an admin/etc).
+		if ( empty( $prev_order->timestamp ) ) {
+			return $level;
+		}
+
+		// Get the last payment date.
+		$next_payment_date = pmprorate_trim_timestamp( pmpro_next_payment( $current_user->ID ) );
 	}
 
-	// Get the last payment date, next payment date, and today.
+	// Get the most recent payment date and today's date.
 	$last_payment_date = pmprorate_trim_timestamp( $prev_order->timestamp );
-	$next_payment_date = pmprorate_trim_timestamp( pmpro_next_payment( $current_user->ID ) );
 	$today = pmprorate_trim_timestamp( current_time( 'timestamp' ) );
 
-	// Calculate the number of days in the current payment period.
+	// Calculate the total number of days in the current payment period.
 	$days_in_period = ceil( ( $next_payment_date - $last_payment_date ) / 3600 / 24 );
 
 	// If the next payment date is not after the last payment date, bail.
@@ -211,6 +240,10 @@ function pmprorate_pmpro_checkout_level( $level ) {
 	$per_passed = $days_passed / $days_in_period;        //as a % (decimal)
 	$per_left   = max( 1 - $per_passed, 0 );
 
+	// Get the credit for the remaining time on the old level.
+	$credit = $prev_order->subtotal * $per_left;
+
+	// If changing to a level with a different payment period, keep the "next payment date" the same.
 	if ( pmprorate_have_same_payment_period( $clevel, $level ) ) {
 		/*
 			Upgrade with same billing period in a nutshell:
@@ -219,7 +252,7 @@ function pmprorate_pmpro_checkout_level( $level ) {
 
 			Proration equation:
 			(a) What they should pay for new level = $level->billing_amount * $per_left.
-			(b) What they should have paid for current level = $clevel->billing_amount * $per_passed.
+			(b) What they should have paid for current payment period = $prev_order->subtotal * $per_passed.
 			What they need to pay = (a) + (b) - (what they already paid)
 			
 			If the number is negative, this would technically require a credit be given to the customer,
@@ -229,12 +262,11 @@ function pmprorate_pmpro_checkout_level( $level ) {
 			
 			An alternative calculation that comes up with the same number (but may be easier to understand) is:
 			(a) What they should pay for new level = $level->billing_amount * $per_left.
-			(b) Their credit for cancelling early = $clevel->billing_amount * $per_left.
+			(b) Their credit for cancelling early = $prev_order->subtotal * $per_left.
 			What they need to pay = (a) - (b)
 		*/
-		$new_level_cost = $level->billing_amount * $per_left;
-		$old_level_cost = $clevel->billing_amount * $per_passed;
-		$level->initial_payment = min( $level->initial_payment, round( $new_level_cost + $old_level_cost - $prev_order->subtotal, 2 ) );
+		$remaining_cost_for_new_level = $level->billing_amount * $per_left;
+		$level->initial_payment = min( $level->initial_payment, round( $remaining_cost_for_new_level - $credit, 2 ) );
 		
 		//make sure payment date stays the same
 		add_filter( 'pmpro_profile_start_date', 'pmprorate_set_startdate_to_next_payment_date', 10, 2 );			
@@ -244,7 +276,6 @@ function pmprorate_pmpro_checkout_level( $level ) {
 			1. Apply a credit to the initial payment based on the partial period of their old level.
 			2. New subscription starts today with the initial payment and will renew one period from now based on the new level.
 		*/
-		$credit                 = $prev_order->subtotal * $per_left;			
 		$level->initial_payment = round( $level->initial_payment - $credit, 2 );
 	}
 
@@ -253,52 +284,81 @@ function pmprorate_pmpro_checkout_level( $level ) {
 		$level->initial_payment = 0;
 	}
 
+	// Return the prorated level.
 	return $level;
 }
-
 add_filter( "pmpro_checkout_level", "pmprorate_pmpro_checkout_level", 10, 1 );
 
 /**
- * Set start date to the next payment date expected.
+ * Set the date that the first recurring payment will be charged.
+ *
+ * @param string $startdate The start date for the membership.
+ * @param object $order The order that is being purchased
  */
 function pmprorate_set_startdate_to_next_payment_date( $startdate, $order ) {
 	global $current_user;
-	
-	//use APIs to be more specific
-	if( $order->gateway == 'stripe' ) {
-		remove_filter('pmpro_next_payment', array('PMProGateway_stripe', 'pmpro_next_payment'), 10, 3);
-		add_filter('pmpro_next_payment', array('PMProGateway_stripe', 'pmpro_next_payment'), 10, 3);
-	} elseif( $order->gateway == 'paypalexpress' ) {
-		remove_filter('pmpro_next_payment', array('PMProGateway_paypalexpress', 'pmpro_next_payment'), 10, 3);
-		add_filter('pmpro_next_payment', array('PMProGateway_paypalexpress', 'pmpro_next_payment'), 10, 3);
-	}
-	
-	//TODO MMPU: Needs to get next payment for this level in particular
-	$next_payment_date = pmpro_next_payment( $current_user->ID );
+
+	// If using PMPro v2.x, we don't have the PMPro_Subscription class. Use old logic.
+	if ( ! class_exists( 'PMPro_Subscription' ) ) {
+		//use APIs to be more specific
+		if( $order->gateway == 'stripe' ) {
+			remove_filter('pmpro_next_payment', array('PMProGateway_stripe', 'pmpro_next_payment'), 10, 3);
+			add_filter('pmpro_next_payment', array('PMProGateway_stripe', 'pmpro_next_payment'), 10, 3);
+		} elseif( $order->gateway == 'paypalexpress' ) {
+			remove_filter('pmpro_next_payment', array('PMProGateway_paypalexpress', 'pmpro_next_payment'), 10, 3);
+			add_filter('pmpro_next_payment', array('PMProGateway_paypalexpress', 'pmpro_next_payment'), 10, 3);
+		}
 		
-	if( !empty( $next_payment_date ) )
-		$startdate = date( "Y-m-d", $next_payment_date ) . "T0:0:0";
+		// Note. This is not MMPU-compatible for PMPro v2.x.
+		$next_payment_date = pmpro_next_payment( $current_user->ID );
+			
+		if( !empty( $next_payment_date ) )
+			$startdate = date( "Y-m-d", $next_payment_date ) . "T0:0:0";
+		
+		return $startdate;
+	}
+
+	// Get the level ID that the user is switching from.
+	$clevel_id = pmproprorate_get_level_id_being_switched_from( $current_user->ID, $order->membership_id );
+
+	// Get the user's current subscription for that level.
+	$current_subscription = PMPro_Subscription::get_subscriptions_for_user( get_current_user_id(), $clevel_id );
+
+	// If the user doesn't have a subscription, bail. This shouldn't ever happen though since we check for this earlier.
+	if ( empty( $current_subscription ) ) {
+		return $startdate;
+	}
+
+	// Return the next payment date.
+	return $current_subscription->get_next_payment_date( 'Y-m-d H:i:s' );
 	
-	return $startdate;
 }
 
 /**
- * Keep your old startdate.
- * Updated from what's in paid-memberships-pro/includes/filters.php to run if the user has ANY level
+ * If the user is going to lose a level at checkout, have it keep the same start date.
+ * Updated from what's in paid-memberships-pro/includes/filters.php.
+ *
+ * @param string $startdate The start date for the membership.
+ * @param int $user_id The ID of the user.
+ * @param object $level The level that the user is purchasing.
  */
 function pmprorate_pmpro_checkout_start_date_keep_startdate( $startdate, $user_id, $level ) {
-	if ( pmpro_hasMembershipLevel() )  //<-- the line that was changed
-	{
+	// Check if the user is going to lose a level at checkout.
+	$old_level_id = pmproprorate_get_level_id_being_switched_from( $user_id, $level->id );
+	if ( ! empty( $old_level_id ) ) {
 		global $wpdb;
 
 		$sqlQuery = $wpdb->prepare( "
 			SELECT startdate 
 			FROM {$wpdb->pmpro_memberships_users} 
-			WHERE user_id = %d AND status = %s 
+			WHERE user_id = %d
+			AND status = %s 
+			AND membership_id = %d
 			ORDER BY id DESC 
 			LIMIT 1",
 			$user_id,
-			'active'
+			'active',
+			$old_level_id
 		);
 
 		$old_startdate = $wpdb->get_var( $sqlQuery );
