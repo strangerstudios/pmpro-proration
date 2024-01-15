@@ -235,7 +235,7 @@ function pmprorate_pmpro_checkout_level( $level ) {
 		return $level;
 	}
 
-	// Get the number of days passed in the current payment period, the percentage of the period that has passed, and the percentage of the period that is left.
+	// Get the percentage of the period that is left.
 	$days_passed = ceil( ( $today - $last_payment_date ) / 3600 / 24 );
 	$per_passed = $days_passed / $days_in_period;        //as a % (decimal)
 	$per_left   = max( 1 - $per_passed, 0 );
