@@ -20,6 +20,12 @@ function pmprorate_isDowngrade( $old, $new ) {
 		return false;
 	}
 
+	// Do not allow delayed downgrading if the new level is the same as the old level.
+	// Don't allow this to be filtered because the delayed downgrade flow won't handle this correctly.
+	if ( $old->id == $new->id ) {
+		return false;
+	}
+
 	// Check which PMPro version we are using.
 	if ( class_exists( 'PMPro_Subscription' ) ) {
 		// Using PMPro v3.0+.
