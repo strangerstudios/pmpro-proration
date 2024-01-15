@@ -1,20 +1,58 @@
 <?php
 
 /** 
- * Function to check if a level change is a downgrade.	
+ * Checks if the "delayed downgrade" flow should be used for this checkout.
  *
- * Assumes levels with smaller initial payments are
- * downgrades. Change this if this is not the case on your
- * site.
+ * Even if the "delayed downgrade" flow is not being used, the initial payment
+ * should still be set to $0 if the user is "downgrading".
+ *
+ * @since TBD
+ *
+ * @param object $old The level that the user is switching from.
+ * @param object $new The level that the user is switching to.
+ * @return bool True if the "delayed downgrade" flow should be used, false otherwise.
  */
 function pmprorate_isDowngrade( $old, $new ) {
-	$old_level = is_object( $old ) ? $old : pmpro_getLevel( $old );
-	$new_level = is_object( $new ) ? $new : pmpro_getLevel( $new );
+	// Do not allow downgrading to a level with an exipration date.
+	// This is because we can't set an expiration date on the delayed downgrade.
+	// Don't allow this to be filtered because the delayed downgrade flow won't handle an expiration date correctly.
+	if ( ! empty( $new->expiration_number ) ) {
+		return false;
+	}
 
-	if ( $old_level->initial_payment > $new_level->initial_payment ) {
-		$r = true;
+	// Check which PMPro version we are using.
+	if ( class_exists( 'PMPro_Subscription' ) ) {
+		// Using PMPro v3.0+.
+		// Only allow a delayed downgrade if the user currently has an active subscription.
+		// This is because we need a "next payment date" to set the delayed downgrade to.
+		// Don't allow this to be filtered because the delayed downgrade flow won't handle a lack of subscription correctly.
+		$current_subscription = PMPro_Subscription::get_subscriptions_for_user( get_current_user_id(), $old->id );
+		if ( empty( $current_subscription ) ) {
+			return false;
+		}
+
+		// Check if the user is purchasing a recurring membership or a "lifetime" membership.
+		if ( empty( $new->billing_amount ) || empty( $new->cycle_number ) ) {
+			// Buying a "lifetime" membership.
+			// Downgrading if the initial payment for that membership is less than the current subscription billing amount.
+			$r = $new->initial_payment < $current_subscription[0]->get_billing_amount();
+		} else {
+			// Buying a recurring membership.
+			// Downgrading if the cost per day of the new membership is less than the cost per day of the old subscription.
+			$current_cost_per_day = pmprorate_get_cost_per_day( $current_subscription[0]->get_billing_amount(), $current_subscription[0]->get_cycle_number(), $current_subscription[0]->get_cycle_period() );
+			$new_cost_per_day     = pmprorate_get_cost_per_day( $new->billing_amount, $new->cycle_number, $new->cycle_period );
+			$r = $new_cost_per_day < $current_cost_per_day;
+		}
 	} else {
-		$r = false;
+		// If using PMPro v2.x, check if the new level has a smaller initial payment.
+		$old_level = is_object( $old ) ? $old : pmpro_getLevel( $old );
+		$new_level = is_object( $new ) ? $new : pmpro_getLevel( $new );
+
+		if ( $old_level->initial_payment > $new_level->initial_payment ) {
+			$r = true;
+		} else {
+			$r = false;
+		}
 	}
 
 	/**
@@ -101,15 +139,6 @@ function pmprorate_pmpro_checkout_level( $level ) {
 		return $level;
 	}
 
-	// Get the last order.
-	$prev_order = new MemberOrder();
-	$prev_order->getLastMemberOrder( $current_user->ID, array( 'success', '', 'cancelled' ), $clevel_id );
-
-	// No prorating needed if they don't have an order (were given the level by an admin/etc).
-	if ( empty( $prev_order->timestamp ) ) {
-		return $level;
-	}
-	
 	// Check if the user should get a delayed downgrade.
 	if ( pmprorate_isDowngrade( $clevel, $level ) ) {
 		/*
@@ -134,6 +163,15 @@ function pmprorate_pmpro_checkout_level( $level ) {
 		}
 
 		// Bail to avoid further proration logic.
+		return $level;
+	}
+
+	// Get the last order.
+	$prev_order = new MemberOrder();
+	$prev_order->getLastMemberOrder( $current_user->ID, array( 'success', '', 'cancelled' ), $clevel_id );
+
+	// No prorating needed if they don't have an order (were given the level by an admin/etc).
+	if ( empty( $prev_order->timestamp ) ) {
 		return $level;
 	}
 
@@ -323,4 +361,33 @@ function pmproprorate_get_level_id_being_switched_from( $user_id, $new_level_id 
 	// If using PMPro v2.x, just choose a membership level that the user currently has. They should only have one.
 	$user_levels = pmpro_getMembershipLevelsForUser( $user_id );
 	return ! empty( $user_levels ) ? (int)array_shift( $user_levels )->id : null;
+}
+
+/**
+ * Helper function to get the cost per day of a billing setup.
+ *
+ * @since TBD
+ *
+ * @param float $billing_amount The amount that the user is billed.
+ * @param int $cycle_number The number of billing periods in a billing setup.
+ * @param string $cycle_period The period of time in a billing setup.
+ */
+function pmprorate_get_cost_per_day( $billing_amount, $cycle_number, $cycle_period ) {
+	$cycle_period_days = null;
+	switch( $cycle_period ) {
+		case 'Day':
+			$cycle_period_days = 1;
+			break;
+		case 'Week':
+			$cycle_period_days = 7;
+			break;
+		case 'Month':
+			$cycle_period_days = 30;
+			break;
+		case 'Year':
+			$cycle_period_days = 365;
+			break;
+	}
+
+	return $billing_amount / ( $cycle_number * $cycle_period_days );
 }
