@@ -145,7 +145,7 @@ function pmprorate_pmpro_checkout_level( $level ) {
 	if ( empty( $current_user->ID ) ) {
 		return $level;
 	}
-	
+
 	// Can only prorate if they already have a level.
 	// In PMPro v3.0+, this will only grab a level in the same "one level per group" membership group.
 	$clevel_id = pmproprorate_get_level_id_being_switched_from( $current_user->ID, $level->id );
@@ -190,12 +190,15 @@ function pmprorate_pmpro_checkout_level( $level ) {
 	if ( class_exists( 'PMPro_Subscription' ) ) {
 		// Using PMPro v3.0+.
 		// Get the user's current subscription.
-		$current_subscription = PMPro_Subscription::get_subscriptions_for_user( get_current_user_id(), $clevel_id );
+		$current_subscriptions = PMPro_Subscription::get_subscriptions_for_user( get_current_user_id(), $clevel_id );
 
 		// No prorating needed if they don't have a subscription.
-		if ( empty( $current_subscription ) ) {
+		if ( empty( $current_subscriptions ) ) {
 			return $level;
 		}
+
+		// Get the current subscription.
+		$current_subscription = current( $current_subscriptions );
 
 		// Get the last payment date and next payment date.
 		$newest_orders = $current_subscription->get_orders( array( 'limit' => 1 ) );
@@ -322,14 +325,15 @@ function pmprorate_set_startdate_to_next_payment_date( $startdate, $order ) {
 	$clevel_id = pmproprorate_get_level_id_being_switched_from( $current_user->ID, $order->membership_id );
 
 	// Get the user's current subscription for that level.
-	$current_subscription = PMPro_Subscription::get_subscriptions_for_user( get_current_user_id(), $clevel_id );
+	$current_subscriptions = PMPro_Subscription::get_subscriptions_for_user( get_current_user_id(), $clevel_id );
 
 	// If the user doesn't have a subscription, bail. This shouldn't ever happen though since we check for this earlier.
-	if ( empty( $current_subscription ) ) {
+	if ( empty( $current_subscriptions ) ) {
 		return $startdate;
 	}
 
 	// Return the next payment date.
+	$current_subscription = current( $current_subscriptions );
 	return $current_subscription->get_next_payment_date( 'Y-m-d H:i:s' );
 	
 }
@@ -418,7 +422,7 @@ function pmproprorate_get_level_id_being_switched_from( $user_id, $new_level_id 
 		$group    = pmpro_get_level_group( $group_id );
 
 		// Only switching from a level if users can have multiple levels from this group at once.
-		if ( ! empty( empty( $group->allow_multiple_selections ) ) ) {
+		if ( ! empty( $group->allow_multiple_selections ) ) {
 			return null;
 		}
 
