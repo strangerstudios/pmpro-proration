@@ -24,7 +24,8 @@ function pmprorate_init_downgrades() {
 
 	// Hook functions to show notices about downgrades.
 	add_action( 'pmpro_invoice_bullets_bottom', 'pmprorate_invoice_bullets_buttom_downgrades', 10, 1 );
-	add_filter( 'the_content', 'pmprorate_the_content_downgrades', 10, 1 );
+	add_filter( 'pmpro_account_membership_expiration_text', 'pmprorate_account_membership_expiration_text_downgrades', 10, 2 );
+	add_filter( 'pmpro_member_edit_memberships_panel_memberships_enddate_text', 'pmprorate_member_edit_memberships_panel_memberships_enddate_text_downgrades', 10, 3 );
 	add_filter( 'pmpro_member_edit_panels', 'pmprorate_member_edit_panels_downgrades', 10, 1 );
 
 }
@@ -209,25 +210,46 @@ function pmprorate_invoice_bullets_buttom_downgrades( $order ) {
  *
  * @since TBD
  *
- * @param string $content The content of the current page.
- * @return string The content of the current page.
+ * @param string $expiration_text The expiration text.
+ * @param object $level The level object.
  */
-function pmprorate_the_content_downgrades( $content ) {
-	global $current_user, $pmpro_pages;
+function pmprorate_account_membership_expiration_text_downgrades( $expiration_text, $level ) {
+	global $current_user;
 
 	// If the user is not logged in, bail.
 	if ( empty( $current_user ) || empty( $current_user->ID ) ) {
-		return $content;
+		return $expiration_text;
 	}
 
-	// If the user is not on the account page, bail.
-	if ( empty( $pmpro_pages['account'] ) || ! is_page( $pmpro_pages['account'] ) ) {
-		return $content;
+	// Avoid duplicate logic by calling pmprorate_member_edit_memberships_panel_memberships_enddate_text_downgrades().
+	$downgrade_text = pmprorate_member_edit_memberships_panel_memberships_enddate_text_downgrades( null, $current_user, $level );
+
+	// Add <p> tags if needed.
+	if ( ! empty( $downgrade_text ) ) {
+		$expiration_text = '<p>' . $downgrade_text . '</p>';
 	}
 
-	// Get the user's pending downgrades.
+	return $expiration_text;
+}
+
+/**
+ * Filter the expiration date text to show to the administrator.
+ *
+ * @since TBD
+ *
+ * @param string $enddate_text The expiration date text to show for this level.
+ * @param WP_User $user The user object.
+ * @param object $shown_level The level object.
+ */
+function pmprorate_member_edit_memberships_panel_memberships_enddate_text_downgrades( $enddate_text, $user, $shown_level ) {
+	if ( empty( $user ) || empty( $user->ID ) ) {
+		return $enddate_text;
+	}
+
+	// Get the user's pending downgrades for this level.
 	$downgrade_query_args = array(
-		'user_id' => $current_user->ID,
+		'user_id' => $user->ID,
+		'original_level_id' => $shown_level->id,
 		'status' => 'pending',
 	);
 	$downgrades = PMProrate_Downgrade::get_downgrades( $downgrade_query_args );
@@ -241,10 +263,10 @@ function pmprorate_the_content_downgrades( $content ) {
 		}
 
 		// Show the downgrade text.
-		$content = '<p><strong>' . esc_html__( 'Important Note:', 'pmpro-proration' ) . '</strong> ' . esc_html( $downgrade_text ) . '</p>' . $content;
+		$enddate_text = $downgrade_text;
 	}
 
-	return $content;
+	return $enddate_text;
 }
 
 /**
