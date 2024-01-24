@@ -35,7 +35,7 @@ add_filter( 'pmpro_mmpu_incompatible_add_ons', 'pmproprorate_mmpu_incompatible_a
 function pmproproate_plugin_row_meta($links, $file) {
 	if ( strpos( $file, 'pmpro-proration.php' ) !== false ) {
 		$new_links = array(
-			'<a href="' . esc_url( 'https://www.paidmembershipspro.com/add-ons/proration-prorate-membership/' )  . '" title="' . esc_attr__( 'View Documentation', 'pmpro-proration' ) . '">' . esc_html__( 'Docs', 'pmpro-proration' ) . '</a>',
+			'<a href="' . esc_url( 'https://www.paidmembershipspro.com/add-ons/proration-prorate-membership/' ) . '" title="' . esc_attr__( 'View Documentation', 'pmpro-proration' ) . '">' . esc_html__( 'Docs', 'pmpro-proration' ) . '</a>',
 			'<a href="' . esc_url( 'https://www.paidmembershipspro.com/support/') . '" title="' . esc_attr__( 'Visit Customer Support Forum', 'pmpro-proration' ) . '">' . esc_html__( 'Support', 'pmpro-proration' ) . '</a>',
 		);
 		$links = array_merge( $links, $new_links );
