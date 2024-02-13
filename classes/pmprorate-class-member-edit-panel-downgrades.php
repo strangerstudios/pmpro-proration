@@ -5,7 +5,7 @@ class PMProrate_Member_Edit_Panel_Downgrades extends PMPro_Member_Edit_Panel {
 	 * Set up the panel.
 	 */
 	public function __construct() {
-		$this->slug = 'pmprorate_downgrades';
+		$this->slug = 'pmprorate-downgrades';
 		$this->title = __( 'Delayed Downgrades', 'pmpro-prorate' );
 	}
 

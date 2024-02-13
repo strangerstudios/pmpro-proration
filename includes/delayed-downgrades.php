@@ -150,7 +150,7 @@ function pmprorate_checkout_before_change_membership_level_remember_downgrade( $
 		'sitename' => get_bloginfo( 'name' ),
 		'login_url' => wp_login_url(),
 		'pmprorate_downgrade_text' => $downgrade->get_downgrade_text(),
-		'edit_member_downgrade_url' => admin_url( 'admin.php?page=pmpro-member&user_id=' . $user_id . '&pmpro_member_edit_panel=pmprorate_downgrades' ),
+		'edit_member_downgrade_url' => admin_url( 'admin.php?page=pmpro-member&user_id=' . $user_id . '&pmpro_member_edit_panel=pmprorate-downgrades' ),
 	);
 
 	// Send email to user.
