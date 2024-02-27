@@ -13,6 +13,11 @@
  * @return bool True if the "delayed downgrade" flow should be used, false otherwise.
  */
 function pmprorate_isDowngrade( $old, $new ) {
+	// Only run for PMPro v3.0+.
+	if ( ! class_exists( 'PMPro_Subscription' ) ) {
+		return false;
+	}
+
 	// Do not allow downgrading to a level with an exipration date.
 	// This is because we can't set an expiration date on the delayed downgrade.
 	// Don't allow this to be filtered because the delayed downgrade flow won't handle an expiration date correctly.
@@ -26,39 +31,25 @@ function pmprorate_isDowngrade( $old, $new ) {
 		return false;
 	}
 
-	// Check which PMPro version we are using.
-	if ( class_exists( 'PMPro_Subscription' ) ) {
-		// Using PMPro v3.0+.
-		// Only allow a delayed downgrade if the user currently has an active subscription.
-		// This is because we need a "next payment date" to set the delayed downgrade to.
-		// Don't allow this to be filtered because the delayed downgrade flow won't handle a lack of subscription correctly.
-		$current_subscription = PMPro_Subscription::get_subscriptions_for_user( get_current_user_id(), $old->id );
-		if ( empty( $current_subscription ) ) {
-			return false;
-		}
+	// Only allow a delayed downgrade if the user currently has an active subscription.
+	// This is because we need a "next payment date" to set the delayed downgrade to.
+	// Don't allow this to be filtered because the delayed downgrade flow won't handle a lack of subscription correctly.
+	$current_subscription = PMPro_Subscription::get_subscriptions_for_user( get_current_user_id(), $old->id );
+	if ( empty( $current_subscription ) ) {
+		return false;
+	}
 
-		// Check if the user is purchasing a recurring membership or a "lifetime" membership.
-		if ( empty( $new->billing_amount ) || empty( $new->cycle_number ) ) {
-			// Buying a "lifetime" membership.
-			// Downgrading if the initial payment for that membership is less than the current subscription billing amount.
-			$r = $new->initial_payment < $current_subscription[0]->get_billing_amount();
-		} else {
-			// Buying a recurring membership.
-			// Downgrading if the cost per day of the new membership is less than the cost per day of the old subscription.
-			$current_cost_per_day = pmprorate_get_cost_per_day( $current_subscription[0]->get_billing_amount(), $current_subscription[0]->get_cycle_number(), $current_subscription[0]->get_cycle_period() );
-			$new_cost_per_day     = pmprorate_get_cost_per_day( $new->billing_amount, $new->cycle_number, $new->cycle_period );
-			$r = $new_cost_per_day < $current_cost_per_day;
-		}
+	// Check if the user is purchasing a recurring membership or a "lifetime" membership.
+	if ( empty( $new->billing_amount ) || empty( $new->cycle_number ) ) {
+		// Buying a "lifetime" membership.
+		// Downgrading if the initial payment for that membership is less than the current subscription billing amount.
+		$r = $new->initial_payment < $current_subscription[0]->get_billing_amount();
 	} else {
-		// If using PMPro v2.x, check if the new level has a smaller initial payment.
-		$old_level = is_object( $old ) ? $old : pmpro_getLevel( $old );
-		$new_level = is_object( $new ) ? $new : pmpro_getLevel( $new );
-
-		if ( $old_level->initial_payment > $new_level->initial_payment ) {
-			$r = true;
-		} else {
-			$r = false;
-		}
+		// Buying a recurring membership.
+		// Downgrading if the cost per day of the new membership is less than the cost per day of the old subscription.
+		$current_cost_per_day = pmprorate_get_cost_per_day( $current_subscription[0]->get_billing_amount(), $current_subscription[0]->get_cycle_number(), $current_subscription[0]->get_cycle_period() );
+		$new_cost_per_day     = pmprorate_get_cost_per_day( $new->billing_amount, $new->cycle_number, $new->cycle_period );
+		$r = $new_cost_per_day < $current_cost_per_day;
 	}
 
 	/**
@@ -166,14 +157,13 @@ function pmprorate_pmpro_checkout_level( $level ) {
 	}
 
 	// Check if the user should get a delayed downgrade.
-	if ( pmprorate_isDowngrade( $clevel, $level ) ) {
+	// This will only work for v3.0+. Otherwise, default migration logic will set the initial payment to $0.
+	if ( class_exists( 'PMPro_Subscription' ) && pmprorate_isDowngrade( $clevel, $level ) ) {
 		/*
 			* Downgrade rule in a nutshell:
 			* 1. Charge $0 now.
 			* 2. Set up new subscription to start billing on the current subscription's next payment date.
 			* 3. Set up delayed downgrade to downgrade the user's membership on the next payment date/expiration date.
-			*
-			* Note: For PMPro versions before 3.0, we need to call pmprorate_legacy_downgrade_set_up() to set up the downgrade.
 			*/
 		$level->initial_payment = 0;
 
@@ -182,11 +172,6 @@ function pmprorate_pmpro_checkout_level( $level ) {
 
 		// Set up the delayed downgrade.
 		$pmprorate_is_downgrade = true;
-
-		// For PMPro versions before 3.0, we need to call pmprorate_legacy_downgrade_set_up() to set up the downgrade.
-		if ( ! class_exists( 'PMPro_Subscription' ) ) {
-			pmprorate_legacy_downgrade_set_up( $clevel );
-		}
 
 		// Bail to avoid further proration logic.
 		return $level;

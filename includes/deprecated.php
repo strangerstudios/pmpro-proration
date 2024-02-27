@@ -139,23 +139,14 @@ function pmprorate_pmpro_isOrderRecurring( $order, $test_checkout = false ) {
 }
 
 /**
- * Function to set up legacy downgrades for PMPro versions before 3.0.
- *
- * @since TBD
- *
- * @param object $clevel The user's current level that is being downgraded from.
- */
-function pmprorate_legacy_downgrade_set_up( $clevel ) {
-	global $pmpro_checkout_old_level, $current_user;
-	$pmpro_checkout_old_level = $clevel;
-	$pmpro_checkout_old_level->next_payment = pmprorate_trim_timestamp( pmpro_next_payment( $current_user->ID ) );
-}
-
-/**
  * After checkout, if the user downgraded, then revert to the old level and remember to change them to the new level later.
+ *
+ * @deprecated TBD
  */
 function pmprorate_pmpro_after_checkout( $user_id ) {
 	global $pmpro_checkout_old_level, $wpdb;
+
+	_deprecated_function( __FUNCTION__, 'TBD' );
 
 	// If using PMPro v3.0+, bail since we have a better downgrade process for 3.0+.
 	if ( class_exists( 'PMPro_Subscription' ) ) {
@@ -183,12 +174,15 @@ function pmprorate_pmpro_after_checkout( $user_id ) {
 		delete_user_meta( $user_id, "pmpro_change_to_level" );
 	}
 }
-add_filter( 'pmpro_after_checkout', 'pmprorate_pmpro_after_checkout' );
 
 /**
  * Update confirmation message.
+ *
+ * @deprecated TBD
  */
 function pmprorate_pmpro_confirmation_message( $message, $invoice ) {
+	_deprecated_function( __FUNCTION__, 'TBD' );
+
 	if ( ! empty( $invoice ) && ! empty( $invoice->user_id ) ) {
 		$downgrading = get_user_meta( $invoice->user_id, "pmpro_change_to_level", true );
 
@@ -210,13 +204,15 @@ function pmprorate_pmpro_confirmation_message( $message, $invoice ) {
 	return $message;
 }
 
-add_filter( "pmpro_confirmation_message", "pmprorate_pmpro_confirmation_message", 10, 2 );
-
 /**
  * Update account page.
+ *
+ * @deprecated TBD
  */
 function pmprorate_the_content( $content ) {
 	global $current_user, $pmpro_pages;
+
+	_deprecated_function( __FUNCTION__, 'TBD' );
 
 	if ( is_user_logged_in() && is_page( $pmpro_pages['account'] ) ) {
 		$downgrading = get_user_meta( $current_user->ID, "pmpro_change_to_level", true );
@@ -239,7 +235,6 @@ function pmprorate_the_content( $content ) {
 
 	return $content;
 }
-add_filter( "the_content", "pmprorate_the_content" );
 
 /**
  * Check for level changes daily.
@@ -261,17 +256,22 @@ function pmproproate_daily_check_for_membership_changes() {
 		//today?
 		$change = get_user_meta( $user_id, 'pmpro_change_to_level', true );
 
-		if ( ! empty( $change ) && ! empty( $change['date'] ) && ! empty( $change['level'] ) && $change['date'] <= $today ) {
-			//get user's current level
-			$clevel_id = pmproprorate_get_level_id_being_switched_from( $user_id, $change['level'] );
-
-			//change back
-			if ( ! empty( $clevel_id ) ) {
-
-				$wpdb->update( $wpdb->pmpro_memberships_users, array( 'membership_id' => $change['level'] ), array( 'membership_id' => $clevel_id, 'user_id' => $user_id, 'status' => 'active') );
-
-			}
-
+		if ( ! empty( $change ) && ! empty( $change['date'] ) && ! empty( $change['level'] ) && (int)$change['date'] <= $today ) {
+			// In case there are somehow downgrades that are queued up through user meta, let's email the admin.
+			$user                 = get_userdata( $user_id );
+			$level                = pmpro_getLevel( $change['level'] );
+			$email                = new PMProEmail();
+			$email->template      = 'pmprorate_legacy_downgrade_failed_admin';
+			$email->subject       = sprintf( __( 'There was an error processing a downgrade at %s', 'pmpro-proration' ), get_option( 'blogname' ) );
+			$email->data          = array( 'body' => '<p>' . esc_html__( 'There was an error executing a delayed downgrade on your website. The following user was supposed to be downgraded from the shown level on the shown date:', 'pmpro-proration' ) . '</p>' . "\n" );
+			$email->data['body'] .= '<p>' . esc_html__( 'User Email', 'pmpro-proration' ) . ': ' . $user->user_email . '</p>' . "\n";
+			$email->data['body'] .= '<p>' . esc_html__( 'Username', 'pmpro-proration' ) . ': ' . $user->user_login . '</p>' . "\n";
+			$email->data['body'] .= '<p>' . esc_html__( 'User Display Name', 'pmpro-proration' ) . ': ' . $user->display_name . '</p>' . "\n";
+			$email->data['body'] .= '<p>' . esc_html__( 'Level ID', 'pmpro-proration' ) . ': ' . $change['level'] . '</p>' . "\n";
+			$email->data['body'] .= '<p>' . esc_html__( 'Level Name', 'pmpro-proration' ) . ': ' . ( empty( $level ) ? sprintf( __( '[deleted level #%d]', 'pmpro-proration' ), $change['level'] ) : $level->name ) . '</p>' . "\n";
+			$email->data['body'] .= '<p>' . esc_html__( 'Date', 'pmpro-proration' ) . ': ' . date_i18n( get_option( 'date_format' ),  (int)$change['date'] ) . '</p>' . "\n";
+			$email->data['body'] .= '<p>' . esc_html__( 'Please check the user\'s account and downgrade them to the desired level. Also be sure to check the level for any active subscriptions that the user may have to make sure that they are also updated to be for the downgraded level.', 'pmpro-proration' ) . '</p>' . "\n";
+			$email->sendEmail( get_bloginfo( 'admin_email' ) );
 			//delete user meta
 			delete_user_meta( $user_id, 'pmpro_change_to_level' );
 		}
