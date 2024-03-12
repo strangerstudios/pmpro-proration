@@ -434,7 +434,13 @@ class PMProrate_Downgrade {
 			return sprintf( __( 'Downgrading to %s.', 'pmpro-prorate' ), $downgrading_to_level_name );
 		} else {
 			// We have a date for the downgrade. Use the earlier of the next payment date or the expiration date.
-			$downgrade_date = ( empty( $expiration_date) || $subscription_next_payment_date < $expiration_date ) ? $subscription->get_next_payment_date( 'date_format' ) : date_i18n( get_option( 'date_format' ), $expiration_date );
+			if ( empty( $subscription_next_payment_date ) && ! empty( $expiration_date ) ) {
+				$downgrade_date = date_i18n( get_option( 'date_format' ), $expiration_date );
+			} elseif( ! empty( $subscription_next_payment_date ) && empty( $expiration_date ) ) {
+				$downgrade_date = $subscription->get_next_payment_date( 'date_format' );
+			} else {
+				$downgrade_date = ( $subscription_next_payment_date < $expiration_date ) ? $subscription->get_next_payment_date( 'date_format' ) : date_i18n( get_option( 'date_format' ), $expiration_date );
+			}
 			return sprintf( __( 'Downgrading to %s on %s.', 'pmpro-prorate' ), $downgrading_to_level_name, $downgrade_date );
 		}
 	}
