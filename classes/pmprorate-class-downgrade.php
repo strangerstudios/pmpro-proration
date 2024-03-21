@@ -7,7 +7,7 @@
  */
 class PMProrate_Downgrade {
 	/**
-	 * The ID of the group entry.
+	 * The ID of the downgrade entry.
 	 *
 	 * @since TBD
 	 *
@@ -52,7 +52,7 @@ class PMProrate_Downgrade {
 	protected $downgrade_order_id;
 
 	/**
-	 * The status of this group.
+	 * The status of this downgrade.
 	 *
 	 * 'pending' => The downgrade has not yet occured.
 	 * 'downgraded_on_renewal' => The downgrade has been completed on a renwal payment.
@@ -71,7 +71,7 @@ class PMProrate_Downgrade {
 	 *
 	 * @since TBD
 	 *
-	 * @param int $downgrade The group ID to populate.
+	 * @param int $downgrade The downgrade ID to populate.
 	 */
 	public function __construct( $downgrade ) {
 		global $wpdb;
@@ -102,7 +102,7 @@ class PMProrate_Downgrade {
 	 *
 	 * @param array $args The query arguments to use to retrieve downgrades.
 	 *
-	 * @return PMProrate_Downgrade[] The list of groups.
+	 * @return PMProrate_Downgrade[] The list of downgrades.
 	 */
 	public static function get_downgrades( $args = array() ) {
 		global $wpdb;
@@ -174,7 +174,7 @@ class PMProrate_Downgrade {
 			return array();
 		}
 
-		// Return the list of groups.
+		// Return the list of downgrades.
 		$downgrades = array();
 		foreach ( $downgrade_ids as $downgrade_id ) {
 			$downgrade = new self( (int)$downgrade_id );
@@ -210,7 +210,7 @@ class PMProrate_Downgrade {
 			return false;
 		}
 
-		// Create the group in the database.
+		// Create the downgrade in the database.
 		$wpdb->insert(
 			$wpdb->pmprorate_downgrades,
 			array(
@@ -227,7 +227,7 @@ class PMProrate_Downgrade {
 			return false;
 		}
 
-		// Return the new group object.
+		// Return the new downgrade object.
 		return new self( $wpdb->insert_id );
 	}
 
