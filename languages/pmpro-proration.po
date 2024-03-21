@@ -1,0 +1,116 @@
+# Copyright (C) 2024 Paid Memberships Pro
+# This file is distributed under the same license as the Paid Memberships Pro - Proration Add On plugin.
+msgid ""
+msgstr ""
+"Project-Id-Version: Paid Memberships Pro - Proration Add On 1.0\n"
+"Report-Msgid-Bugs-To: info@paidmembershipspro.com\n"
+"Last-Translator: Paid Memberships Pro <info@paidmembershipspro.com>\n"
+"Language-Team: Paid Memberships Pro <info@paidmembershipspro.com>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"POT-Creation-Date: 2024-03-21T14:50:26+00:00\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"X-Generator: WP-CLI 2.10.0\n"
+"X-Domain: pmpro-proration\n"
+
+#. Plugin Name of the plugin
+#: pmpro-proration.php
+msgid "Paid Memberships Pro - Proration Add On"
+msgstr ""
+
+#. Plugin URI of the plugin
+#: pmpro-proration.php
+msgid "http://www.paidmembershipspro.com/wp/pmpro-proration/"
+msgstr ""
+
+#. Description of the plugin
+#: pmpro-proration.php
+msgid "Simple proration for membership level upgrades and downgrades."
+msgstr ""
+
+#. Author of the plugin
+#: pmpro-proration.php
+msgid "Paid Memberships Pro"
+msgstr ""
+
+#. Author URI of the plugin
+#: pmpro-proration.php
+msgid "https://www.paidmembershipspro.com"
+msgstr ""
+
+#: includes/checkout.php:380
+msgid "The %s code has been applied to your order."
+msgstr ""
+
+#: includes/deprecated.php:171
+msgid "Problem updating membership information. Please report this to the webmaster."
+msgstr ""
+
+#: includes/deprecated.php:195
+msgid "You will be downgraded to %s on %s"
+msgstr ""
+
+#: includes/deprecated.php:223
+msgid "Important Note:"
+msgstr ""
+
+#: includes/deprecated.php:226
+msgid "You will be downgraded to %s on %s."
+msgstr ""
+
+#: includes/deprecated.php:265
+msgid "There was an error processing a downgrade at %s"
+msgstr ""
+
+#: includes/deprecated.php:266
+msgid "There was an error executing a delayed downgrade on your website. The following user was supposed to be downgraded from the shown level on the shown date:"
+msgstr ""
+
+#: includes/deprecated.php:267
+msgid "User Email"
+msgstr ""
+
+#: includes/deprecated.php:268
+msgid "Username"
+msgstr ""
+
+#: includes/deprecated.php:269
+msgid "User Display Name"
+msgstr ""
+
+#: includes/deprecated.php:270
+msgid "Level ID"
+msgstr ""
+
+#: includes/deprecated.php:271
+msgid "Level Name"
+msgstr ""
+
+#: includes/deprecated.php:271
+msgid "[deleted level #%d]"
+msgstr ""
+
+#: includes/deprecated.php:272
+msgid "Date"
+msgstr ""
+
+#: includes/deprecated.php:273
+msgid "Please check the user's account and downgrade them to the desired level. Also be sure to check the level for any active subscriptions that the user may have to make sure that they are also updated to be for the downgraded level."
+msgstr ""
+
+#: pmpro-proration.php:38
+msgid "View Documentation"
+msgstr ""
+
+#: pmpro-proration.php:38
+msgid "Docs"
+msgstr ""
+
+#: pmpro-proration.php:39
+msgid "Visit Customer Support Forum"
+msgstr ""
+
+#: pmpro-proration.php:39
+msgid "Support"
+msgstr ""
