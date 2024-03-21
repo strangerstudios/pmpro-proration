@@ -10,33 +10,33 @@
 function pmprorate_template_callback( $templates ) {
 	$templates['delayed_downgrade_scheduled'] = array(
 		'subject' => esc_html( sprintf( __( 'Your downgrade has been scheduled at %s', 'pmpro-prorate' ), get_option( 'blogname' ) ) ),
-		'description' => __( 'Proration Downgrade Scheduled', 'pmpro-prorate' ),
+		'description' => esc_html__( 'Proration Downgrade Scheduled', 'pmpro-prorate' ),
 		'body' => pmprorate_get_default_delayed_downgrade_scheduled_email_body(),
-		'help_text' => __( 'This email is sent when a membership downgrade is scheduled. The !!pmprorate_downgrade_text!! placeholder variable can be used to display the details of the downgrade.', 'pmpro-prorate' ),
+		'help_text' => esc_html__( 'This email is sent when a membership downgrade is scheduled. The !!pmprorate_downgrade_text!! placeholder variable can be used to display the details of the downgrade.', 'pmpro-prorate' ),
 	);
 	$templates['delayed_downgrade_scheduled_admin'] = array(
         'subject' => esc_html( sprintf( __( 'A downgrade has been scheduled at %s', 'pmpro-prorate' ), get_option( 'blogname' ) ) ),
-        'description' => __( 'Proration Downgrade Scheduled (Admin)', 'pmpro-prorate' ),
+        'description' => esc_html__( 'Proration Downgrade Scheduled (Admin)', 'pmpro-prorate' ),
         'body' => pmprorate_get_default_delayed_downgrade_scheduled_admin_email_body(),
-        'help_text' => __( 'This email is sent when a membership downgrade is scheduled. The !!edit_member_downgrade_url!! placeholder variable can be used to show a link to the downgrades list.', 'pmpro-prorate' ),
+        'help_text' => esc_html__( 'This email is sent when a membership downgrade is scheduled. The !!edit_member_downgrade_url!! placeholder variable can be used to show a link to the downgrades list.', 'pmpro-prorate' ),
     );
     $templates['delayed_downgrade_processed'] = array(
         'subject' => esc_html( sprintf( __( 'Your downgrade has been processed at %s', 'pmpro-prorate' ), get_option( 'blogname' ) ) ),
-        'description' => __( 'Proration Downgrade Processed', 'pmpro-prorate' ),
+        'description' => esc_html__( 'Proration Downgrade Processed', 'pmpro-prorate' ),
         'body' => pmprorate_get_default_delayed_downgrade_processed_email_body(),
-        'help_text' => __( 'This email is sent when a membership downgrade is processed.', 'pmpro-prorate' ),
+        'help_text' => esc_html__( 'This email is sent when a membership downgrade is processed.', 'pmpro-prorate' ),
     );
     $templates['delayed_downgrade_processed_admin'] = array(
         'subject' => esc_html( sprintf( __( 'A downgrade has been processed at %s', 'pmpro-prorate' ), get_option( 'blogname' ) ) ),
-        'description' => __( 'Proration Downgrade Processed (Admin)', 'pmpro-prorate' ),
+        'description' => esc_html__( 'Proration Downgrade Processed (Admin)', 'pmpro-prorate' ),
         'body' => pmprorate_get_default_delayed_downgrade_processed_admin_email_body(),
-        'help_text' => __( 'This email is sent when a membership downgrade is processed. The !!edit_member_downgrade_url!! placeholder variable can be used to show a link to the downgrades list.', 'pmpro-prorate' ),
+        'help_text' => esc_html__( 'This email is sent when a membership downgrade is processed. The !!edit_member_downgrade_url!! placeholder variable can be used to show a link to the downgrades list.', 'pmpro-prorate' ),
     );
     $templates['delayed_downgrade_error_admin'] = array(
         'subject' => esc_html( sprintf( __( 'There was an error processing a downgrade at %s', 'pmpro-prorate' ), get_option( 'blogname' ) ) ),
-        'description' => __( 'Proration Downgrade Error (Admin)', 'pmpro-prorate' ),
+        'description' => esc_html__( 'Proration Downgrade Error (Admin)', 'pmpro-prorate' ),
         'body' => pmprorate_get_default_delayed_downgrade_error_admin_email_body(),
-        'help_text' => __( 'This email is sent when there is an error processing a membership downgrade. The !!edit_member_downgrade_url!! placeholder variable can be used to show a link to the downgrades list.', 'pmpro-prorate' ),
+        'help_text' => esc_html__( 'This email is sent when there is an error processing a membership downgrade. The !!edit_member_downgrade_url!! placeholder variable can be used to show a link to the downgrades list.', 'pmpro-prorate' ),
     );
 	
 	return $templates;

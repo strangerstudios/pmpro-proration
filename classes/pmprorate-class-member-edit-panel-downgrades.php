@@ -6,7 +6,7 @@ class PMProrate_Member_Edit_Panel_Downgrades extends PMPro_Member_Edit_Panel {
 	 */
 	public function __construct() {
 		$this->slug = 'pmprorate-downgrades';
-		$this->title = __( 'Delayed Downgrades', 'pmpro-prorate' );
+		$this->title = esc_html__( 'Delayed Downgrades', 'pmpro-prorate' );
 	}
 
 	/**
@@ -47,9 +47,9 @@ class PMProrate_Member_Edit_Panel_Downgrades extends PMPro_Member_Edit_Panel {
 				foreach ( $downgrades as $downgrade ) {
 					// Get the level names to display.
 					$downgrading_from_level = pmpro_getLevel( $downgrade->original_level_id );
-					$downgrading_from_level_name = empty( $downgrading_from_level ) ? sprintf( __( '[deleted level #%d]', 'pmpro-prorate' ), $downgrade->original_level_id ) : $downgrading_from_level->name;
+					$downgrading_from_level_name = empty( $downgrading_from_level ) ? sprintf( esc_html__( '[deleted level #%d]', 'pmpro-prorate' ), $downgrade->original_level_id ) : $downgrading_from_level->name;
 					$downgrading_to_level = pmpro_getLevel( $downgrade->new_level_id );
-					$downgrading_to_level_name = empty( $downgrading_to_level ) ? sprintf( __( '[deleted level #%d]', 'pmpro-prorate' ), $downgrade->new_level_id ) : $downgrading_to_level->name;
+					$downgrading_to_level_name = empty( $downgrading_to_level ) ? sprintf( esc_html__( '[deleted level #%d]', 'pmpro-prorate' ), $downgrade->new_level_id ) : $downgrading_to_level->name;
 
 					// Get the order object and link.
 					$downgrade_order = new MemberOrder( $downgrade->downgrade_order_id );
@@ -62,19 +62,19 @@ class PMProrate_Member_Edit_Panel_Downgrades extends PMPro_Member_Edit_Panel {
 							$status_class = 'pmpro_tag pmpro_tag-has_icon pmpro_tag-alert';
 							break;
 						case 'downgraded_on_renewal':
-							$status_text = __( 'Processed on renewal', 'pmpro-prorate' );
+							$status_text = esc_html__( 'Processed on renewal', 'pmpro-prorate' );
 							$status_class = 'pmpro_tag pmpro_tag-has_icon pmpro_tag-success';
 							break;
 						case 'downgraded_on_expiration':
-							$status_text = __( 'Processed on expiration', 'pmpro-prorate' );
+							$status_text = esc_html__( 'Processed on expiration', 'pmpro-prorate' );
 							$status_class = 'pmpro_tag pmpro_tag-has_icon pmpro_tag-success';
 							break;
 						case 'lost_original_level':
-							$status_text = __( 'Lost original level', 'pmpro-prorate' );
+							$status_text = esc_html__( 'Lost original level', 'pmpro-prorate' );
 							$status_class = 'pmpro_tag pmpro_tag-has_icon pmpro_tag-error';
 							break;
 						case 'error':
-							$status_text = __( 'Error', 'pmpro-prorate' );
+							$status_text = esc_html__( 'Error', 'pmpro-prorate' );
 							$status_class = 'pmpro_tag pmpro_tag-has_icon pmpro_tag-error';
 							break;
 					}
