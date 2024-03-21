@@ -8,6 +8,8 @@ Author: Stranger Studios
 Author URI: http://www.strangerstudios.com
 */
 
+define( 'PMPRORATE_DIR', dirname( __FILE__ ) );
+
 /**
  * Load the languages folder for translations.
  */
@@ -16,18 +18,16 @@ function pmprorate_load_plugin_text_domain() {
 }
 add_action( 'plugins_loaded', 'pmprorate_load_plugin_text_domain' );
 
-include_once( plugin_dir_path( __FILE__ ) . 'includes/checkout.php' ); // Handles proration at checkout
-include_once( plugin_dir_path( __FILE__ ) . 'includes/delayed-downgrades.php' ); // Handles downgrade UI and processing delayed downgrades.
-include_once( plugin_dir_path( __FILE__ ) . 'includes/deprecated.php' ); // Deprecated functions.
+include_once( PMPRORATE_DIR . '/classes/pmprorate-class-downgrade.php' ); // Handles downgrades.
+include_once( PMPRORATE_DIR . '/includes/checkout.php' ); // Handles proration at checkout
+include_once( PMPRORATE_DIR . '/includes/delayed-downgrades.php' ); // Handles downgrade UI and processing delayed downgrades.
+include_once( PMPRORATE_DIR . '/includes/emails.php' ); // Handles emails.
+include_once( PMPRORATE_DIR . '/includes/upgradecheck.php' ); // Checks for upgrades.
+include_once( PMPRORATE_DIR . '/includes/deprecated.php' ); // Deprecated functions.
 
-/**
- * Mark the plugin as MMPU-incompatible.
- */
-  function pmproprorate_mmpu_incompatible_add_ons( $incompatible ) {
-	$incompatible[] = 'PMPro Prorations Add On';
-	return $incompatible;
-}
-add_filter( 'pmpro_mmpu_incompatible_add_ons', 'pmproprorate_mmpu_incompatible_add_ons' );
+// Set up $wpdb tables.
+global $wpdb;
+$wpdb->pmprorate_downgrades = $wpdb->prefix . 'pmprorate_downgrades';
 
 /**
  * Add links to the plugin row meta
