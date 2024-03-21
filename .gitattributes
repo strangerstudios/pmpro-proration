@@ -1,0 +1,5 @@
+# Items to ignore when downloading a zip
+pmpro-proration-banner.png export-ignore
+.gitattributes export-ignore
+.github export-ignore
+README.md export-ignore

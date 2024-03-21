@@ -2,10 +2,10 @@
 /*
 Plugin Name: Paid Memberships Pro - Proration Add On
 Plugin URI: http://www.paidmembershipspro.com/wp/pmpro-proration/
-Description: Custom Prorating Code for Paid Memberships Pro
+Description: Simple proration for membership level upgrades and downgrades.
 Version: .3.1
-Author: Stranger Studios
-Author URI: http://www.strangerstudios.com
+Author: Paid Memberships Pro
+Author URI: https://www.paidmembershipspro.com
 */
 
 define( 'PMPRORATE_DIR', dirname( __FILE__ ) );
@@ -30,18 +30,16 @@ global $wpdb;
 $wpdb->pmprorate_downgrades = $wpdb->prefix . 'pmprorate_downgrades';
 
 /**
- * Add links to the plugin row meta
+ * Function to add links to the plugin row meta
  */
-function pmproproate_plugin_row_meta( $links, $file ) {
+function pmproproate_plugin_row_meta($links, $file) {
 	if ( strpos( $file, 'pmpro-proration.php' ) !== false ) {
 		$new_links = array(
-			'<a href="' . esc_url( 'http://www.paidmembershipspro.com/add-ons/plus-add-ons/proration-prorate-membership/' ) . '" title="' . esc_attr( __( 'View Documentation', 'pmpro-proration' ) ) . '">' . esc_html__( 'Docs', 'pmpro-proration' ) . '</a>',
-			'<a href="' . esc_url( 'http://paidmembershipspro.com/support/' ) . '" title="' . esc_attr( __( 'Visit Customer Support Forum', 'pmpro-proration' ) ) . '">' . esc_html__( 'Support', 'pmpro-proration' ) . '</a>',
+			'<a href="' . esc_url( 'https://www.paidmembershipspro.com/add-ons/proration-prorate-membership/' ) . '" title="' . esc_attr__( 'View Documentation', 'pmpro-proration' ) . '">' . esc_html__( 'Docs', 'pmpro-proration' ) . '</a>',
+			'<a href="' . esc_url( 'https://www.paidmembershipspro.com/support/') . '" title="' . esc_attr__( 'Visit Customer Support Forum', 'pmpro-proration' ) . '">' . esc_html__( 'Support', 'pmpro-proration' ) . '</a>',
 		);
-		$links     = array_merge( $links, $new_links );
+		$links = array_merge( $links, $new_links );
 	}
-
 	return $links;
 }
-
 add_filter( 'plugin_row_meta', 'pmproproate_plugin_row_meta', 10, 2 );
