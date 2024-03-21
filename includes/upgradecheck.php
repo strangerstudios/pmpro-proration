@@ -42,7 +42,7 @@ function pmprorate_db_delta() {
 			`original_level_id` int(11) unsigned NOT NULL,
             `new_level_id` int(11) unsigned NOT NULL,
             `downgrade_order_id` bigint(20) unsigned NOT NULL,
-			`status` enum('pending','downgraded_on_renewal','downgraded_on_expiration','lost_original_level','error') NOT NULL DEFAULT 'pending',
+			`status` varchar(32) NOT NULL DEFAULT 'pending',
 			PRIMARY KEY (`id`),
 			KEY `user_id` (`user_id`),
             KEY `downgrade_order_id` (`downgrade_order_id`)
