@@ -377,7 +377,7 @@ function pmprorate_applydiscountcode_return_js( $discount_code, $discount_code_i
 	
 	$code_level = pmprorate_pmpro_checkout_level( $code_level );
 	?>
-		jQuery('#pmpro_level_cost').html('<p><?php printf( esc_html__('The %s code has been applied to your order.', 'pmpro-proration' ), '<strong>' . esc_html( $discount_code ) . '</strong>' );?></p><p><?php echo pmpro_no_quotes(pmpro_getLevelCost($code_level), array('"', "'", "\n", "\r"))?><?php echo pmpro_no_quotes(pmpro_getLevelExpiration($code_level), array('"', "'", "\n", "\r"))?></p>');
+		jQuery('#pmpro_level_cost').html('<p><?php printf( esc_html__('The %s code has been applied to your order.', 'pmpro-proration' ), '<strong>' . esc_html( $discount_code ) . '</strong>' );?></p><p><?php echo wp_kses_post( pmpro_no_quotes(pmpro_getLevelCost($code_level), array('"', "'", "\n", "\r")))?><?php echo wp_kses_post( pmpro_no_quotes(pmpro_getLevelExpiration($code_level), array('"', "'", "\n", "\r")))?></p>');
 	<?php
 }
 
