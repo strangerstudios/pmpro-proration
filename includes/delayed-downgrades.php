@@ -3,7 +3,7 @@
 /**
  * Only run this downgrade code if using PMPro v3.0+.
  *
- * @since TBD
+ * @since 1.0
  */
 function pmprorate_init_downgrades() {
 	// Make sure that we are using PMPro v3.0+.
@@ -34,7 +34,7 @@ add_action( 'init', 'pmprorate_init_downgrades' );
  * After an order is created, check the global $pmprorate_is_downgrade variable.
  * If it is set, then mark the order as a downgrade to be scheduled later.
  *
- * @since TBD
+ * @since 1.0
  *
  * @param MemberOrder $order The order object.
  */
@@ -55,7 +55,7 @@ function pmprorate_added_order_mark_order_as_downgrade( $order ) {
 /**
  * Bail from the checkout process when a user is downgrading. The downgrade will be completed asynchronously.
  *
- * @since TBD
+ * @since 1.0
  *
  * @param int $user_id The ID of the user.
  * @param MemberOrder $order The order object.
@@ -177,7 +177,7 @@ function pmprorate_checkout_before_change_membership_level_remember_downgrade( $
 /**
  * Add downgrade information to the invoice page.
  *
- * @since TBD
+ * @since 1.0
  *
  * @param MemberOrder $order The order object being shown.
  */
@@ -207,7 +207,7 @@ function pmprorate_invoice_bullets_buttom_downgrades( $order ) {
 /**
  * Add downgrade information to the account page.
  *
- * @since TBD
+ * @since 1.0
  *
  * @param string $expiration_text The expiration text.
  * @param object $level The level object.
@@ -241,7 +241,7 @@ function pmprorate_membership_expiration_text_downgrades( $expiration_text, $lev
 /**
  * Add a panel to the Edit Member dashboard page.
  *
- * @since TBD
+ * @since 1.0
  *
  * @param array $panels Array of panels.
  * @return array
@@ -265,7 +265,7 @@ function pmprorate_member_edit_panels_downgrades( $panels ) {
  * If so, check if the subscription has a downgrade order linked.
  * If so, process the downgrade.
  *
- * @since TBD
+ * @since 1.0
  *
  * @param MemberOrder $order The order object.
  */
@@ -330,7 +330,7 @@ function pmprorate_member_edit_panels_downgrades( $panels ) {
  * When a membership is about to expire, check if it is part of a downgrade.
  * If so, process the downgrade.
  *
- * @since TBD
+ * @since 1.0
  *
  * @param int $user_id The ID of the user having a level expired.
  * @param int $level_id The ID of the level being expired.
@@ -368,7 +368,7 @@ function pmprorate_membership_pre_membership_expiry( $user_id, $level_id ) {
 /**
  * Skip the next expiration email.
  *
- * @since TBD
+ * @since 1.0
  *
  * @param bool $skip Whether to skip the expiration email.
  * @return bool Whether to skip the expiration email.
@@ -385,7 +385,7 @@ function pmprorate_membership_pre_membership_expiry( $user_id, $level_id ) {
  * When a user loses a level, check if they have a pending downgrade for that level.
  * If so, remove the downgrade.
  *
- * @since TBD
+ * @since 1.0
  *
  * @param array $old_user_levels The old levels the users had.
  */

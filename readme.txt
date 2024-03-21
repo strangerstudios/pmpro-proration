@@ -3,7 +3,7 @@ Contributors: strangerstudios
 Tags: pmpro, paid memberships pro, members, memberships, prorated, prorate, proration, upgrade, downgrade
 Requires at least: 3.0
 Tested up to: 4.9.4
-Stable tag: .3.1
+Stable tag: 1.0
 
 Simple proration for membership upgrades and downgrades to maintain a member's payment date and adjust initial payment at membership checkout.
 
@@ -12,9 +12,10 @@ When a member chooses to upgrade, they are charged a pro-rated amount for the ne
 
 When a member chooses to downgrade, the initial payment is $0 and the downgrade is delayed until the next payment date. The member's current payment date is maintained.
 
-Downgrades are defined as having an initial payment less than the current level, but can be altered via filters. It assumes that the level's initial payment is equal to billing amount.
+Downgrades are defined as having an average subscription cost per day less than the current level, but can be altered via filters.
 
-A limitation of this code is that if a member upgrades twice within one pay period, only the last payment will be considered with the prorating. This could be handled by summing the total of all orders within the pay period, but this could cause conflicts on sites that have multiple unrelated orders (pmpro-addon-packages or similar customizations) and payments on edge dates might be accidentally included or not included in the sum.
+For sites that are not yet upgraded to PMPro v3.0, a limitation of this code is that if a member upgrades twice within one pay period, only the last payment will be considered with the prorating. This could be handled by summing the total of all orders within the pay period, but this could cause conflicts on sites that have multiple unrelated orders (pmpro-addon-packages or similar customizations) and payments on edge dates might be accidentally included or not included in the sum.
+For sites that are using PMPro v3.0+, prorated amounts are calculated based on the user's active subscriptions.
 
 == Installation ==
 
@@ -22,6 +23,20 @@ A limitation of this code is that if a member upgrades twice within one pay peri
 1. Activate the plugin through the 'Plugins' menu in WordPress.
 
 == Changelog ==
+= 1.0 - 2024-03-21 =
+* FEATURE: Now fully supporting delayed downgrades for PMPro v3.0+. #24 (@dparker1005)
+* ENHANCEMENT: Improved proration accurancy by using the subscriptions table in PMPro v3.0+ to calculate the prorated amount. #24 (@dparker1005)
+* ENHANCEMENT: Added localization support. (@dparker1005)
+* BUG FIX/ENHANCEMENT: Now showing prorated level cost after applying a discount code. #4 (@TravisHardman)
+* BUG FIX/ENHANCEMENT: Improving the accuracy of the `pmprorate_isDowngrade()` and `pmprorate_have_same_payment_period()` functions. #21 (@dparker1005)
+* BUG FIX/ENHANCEMENT: When using PMPro v3.0+, prorations now only happen between levels in the same "one level per user" level group. #24 (@dparker1005)
+* BUG FIX: Fixed issue where users would not keep their old membership level when downgrading. #14 (@dparker1005)
+* BUG FIX: Fixed issue where users could be charged more than the original level cost if checking out for a level with a different billing period and previous recurring orders are missing. #11 (@dparker1005)
+* BUG FIX: Fixed issue where users could receive a free initial payment if upgrading to a level with the same billing period and previous recurring orders are missing. #11 (@dparker1005)
+* BUG FIX: Fixed issue where subscriptions purchased during a downgrade would charge 1 payment period from the downgrade. Instead, the first recurring payment is now charged on the "next payment date" for the old subscription. (@ideadude)
+* REFACTOR: Moved code into separate files for clarity. #23 (@dparker1005)
+* DEPRECATED: Deprecated old functions that are not called. #22 (@dparker1005)
+
 = .3.1 =
 * BUG FIX: Added a check to the filter of pmpro_checkout_level to bail if no level.
 

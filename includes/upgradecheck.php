@@ -2,7 +2,7 @@
 /**
  * Run any necessary upgrades to the DB.
  *
- * @since TBD
+ * @since 1.0
  */
 function pmprorate_check_for_upgrades() {
 	$db_version = get_option( 'pmprorate_db_version' );
@@ -25,7 +25,7 @@ function pmprorate_check_for_upgrades() {
 /**
  * Make sure the DB is set up correctly.
  *
- * @since TBD
+ * @since 1.0
  */
 function pmprorate_db_delta() {
 	require_once( ABSPATH . 'wp-admin/includes/upgrade.php' );

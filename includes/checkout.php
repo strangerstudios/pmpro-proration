@@ -6,7 +6,7 @@
  * Even if the "delayed downgrade" flow is not being used, the initial payment
  * should still be set to $0 if the user is "downgrading".
  *
- * @since TBD
+ * @since 1.0
  *
  * @param object $old The level that the user is switching from.
  * @param object $new The level that the user is switching to.
@@ -59,7 +59,7 @@ function pmprorate_isDowngrade( $old, $new ) {
 	 * @param int $old_level_id The ID of the old level. Ideally this should be an object, but need to pass the ID for backwards compatibility.
 	 * @param int $new_level_id The ID of the new level. Ideally this should be an object, but need to pass the ID for backwards compatibility.
 	 *
-	 * @since TBD
+	 * @since 1.0
 	 *
 	 * @return bool True if the level change is a downgrade, false otherwise.
 	 */
@@ -108,7 +108,7 @@ function pmprorate_have_same_payment_period( $old, $new ) {
 	 * @param int $old_level_id The ID of the old level. Ideally this should be an object, but need to pass the ID for backwards compatibility.
 	 * @param int $new_level_id The ID of the new level. Ideally this should be an object, but need to pass the ID for backwards compatibility.
 	 *
-	 * @since TBD
+	 * @since 1.0
 	 *
 	 * @return bool True if the levels have the same payment period, false otherwise.
 	 */
@@ -395,7 +395,7 @@ add_action( 'init', 'pmprorate_pmpro_init' );
 /**
  * Get the level ID that would be switched from if a particular level is purchased.
  *
- * @since TBD
+ * @since 1.0
  *
  * @param int $user_id The ID of the user.
  * @param int $new_level_id The ID of the level that the user is trying to switch to.
@@ -439,7 +439,7 @@ function pmproprorate_get_level_id_being_switched_from( $user_id, $new_level_id 
 /**
  * Helper function to get the cost per day of a billing setup.
  *
- * @since TBD
+ * @since 1.0
  *
  * @param float $billing_amount The amount that the user is billed.
  * @param int $cycle_number The number of billing periods in a billing setup.

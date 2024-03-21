@@ -3,10 +3,10 @@
 /**
  * Update a start date based on the last payment date and the new payment period.
  *
- * @deprecated TBD
+ * @deprecated 1.0
  */
 function pmprorate_set_startdate_one_period_out_from_last_payment_date( $startdate, $order ) {
-	_deprecated_function( __FUNCTION__, 'TBD' );
+	_deprecated_function( __FUNCTION__, '1.0' );
 
 	// Fetch the date of the most recent order for current user
 	if ( ! empty( $order->user_id ) ) {
@@ -25,12 +25,12 @@ function pmprorate_set_startdate_one_period_out_from_last_payment_date( $startda
 /**
  * Get the date of the last recurring order.
  *
- * @deprecated TBD
+ * @deprecated 1.0
  */
 function pmprorate_pmpro_getLastRecurringOrderDatetime( $user_id = null ) {
 	global $wpdb;
 
-	_deprecated_function( __FUNCTION__, 'TBD' );
+	_deprecated_function( __FUNCTION__, '1.0' );
 
 	// Fetch most recent order
 	$lastorder = new MemberOrder();
@@ -88,12 +88,12 @@ function pmprorate_pmpro_getLastRecurringOrderDatetime( $user_id = null ) {
 /**
  * Check if a given order is recurring or not.
  *
- * @deprecated TBD
+ * @deprecated 1.0
  */
 function pmprorate_pmpro_isOrderRecurring( $order, $test_checkout = false ) {
 	global $wpdb;
 
-	_deprecated_function( __FUNCTION__, 'TBD' );
+	_deprecated_function( __FUNCTION__, '1.0' );
 
 	//must have a subscription_transaction_id
 	if ( empty( $order->subscription_transaction_id ) ) {
@@ -141,12 +141,12 @@ function pmprorate_pmpro_isOrderRecurring( $order, $test_checkout = false ) {
 /**
  * After checkout, if the user downgraded, then revert to the old level and remember to change them to the new level later.
  *
- * @deprecated TBD
+ * @deprecated 1.0
  */
 function pmprorate_pmpro_after_checkout( $user_id ) {
 	global $pmpro_checkout_old_level, $wpdb;
 
-	_deprecated_function( __FUNCTION__, 'TBD' );
+	_deprecated_function( __FUNCTION__, '1.0' );
 
 	// If using PMPro v3.0+, bail since we have a better downgrade process for 3.0+.
 	if ( class_exists( 'PMPro_Subscription' ) ) {
@@ -178,10 +178,10 @@ function pmprorate_pmpro_after_checkout( $user_id ) {
 /**
  * Update confirmation message.
  *
- * @deprecated TBD
+ * @deprecated 1.0
  */
 function pmprorate_pmpro_confirmation_message( $message, $invoice ) {
-	_deprecated_function( __FUNCTION__, 'TBD' );
+	_deprecated_function( __FUNCTION__, '1.0' );
 
 	if ( ! empty( $invoice ) && ! empty( $invoice->user_id ) ) {
 		$downgrading = get_user_meta( $invoice->user_id, "pmpro_change_to_level", true );
@@ -207,12 +207,12 @@ function pmprorate_pmpro_confirmation_message( $message, $invoice ) {
 /**
  * Update account page.
  *
- * @deprecated TBD
+ * @deprecated 1.0
  */
 function pmprorate_the_content( $content ) {
 	global $current_user, $pmpro_pages;
 
-	_deprecated_function( __FUNCTION__, 'TBD' );
+	_deprecated_function( __FUNCTION__, '1.0' );
 
 	if ( is_user_logged_in() && is_page( $pmpro_pages['account'] ) ) {
 		$downgrading = get_user_meta( $current_user->ID, "pmpro_change_to_level", true );

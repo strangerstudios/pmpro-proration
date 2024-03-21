@@ -3,13 +3,13 @@
 /**
  * The PMPro Prorations downgrade object.
  *
- * @since TBD
+ * @since 1.0
  */
 class PMProrate_Downgrade {
 	/**
 	 * The ID of the downgrade entry.
 	 *
-	 * @since TBD
+	 * @since 1.0
 	 *
 	 * @var int
 	 */
@@ -18,7 +18,7 @@ class PMProrate_Downgrade {
 	/**
 	 * The user ID for the downgrade.
 	 *
-	 * @since TBD
+	 * @since 1.0
 	 *
 	 * @var int
 	 */
@@ -27,7 +27,7 @@ class PMProrate_Downgrade {
 	/**
 	 * The level ID that the user will be downgraded from.
 	 *
-	 * @since TBD
+	 * @since 1.0
 	 *
 	 * @var int
 	 */
@@ -36,7 +36,7 @@ class PMProrate_Downgrade {
 	/**
 	 * The level ID that the user will be downgraded to.
 	 *
-	 * @since TBD
+	 * @since 1.0
 	 *
 	 * @var int
 	 */
@@ -45,7 +45,7 @@ class PMProrate_Downgrade {
 	/**
 	 * The ID of the order containing the downgrade asynchronous checkout data.
 	 *
-	 * @since TBD
+	 * @since 1.0
 	 *
 	 * @var int
 	 */
@@ -60,7 +60,7 @@ class PMProrate_Downgrade {
 	 * 'lost_original_level' => The user lost the original level before the downgrade could be completed.
 	 * 'error' => There was an error processing the downgrade.
 	 *
-	 * @since TBD
+	 * @since 1.0
 	 *
 	 * @var string
 	 */
@@ -69,7 +69,7 @@ class PMProrate_Downgrade {
 	/**
 	 * Get a downgrade object by ID.
 	 *
-	 * @since TBD
+	 * @since 1.0
 	 *
 	 * @param int $downgrade The downgrade ID to populate.
 	 */
@@ -98,7 +98,7 @@ class PMProrate_Downgrade {
 	/**
 	 * Get the list of downgrades based on query arguments.
 	 *
-	 * @since TBD
+	 * @since 1.0
 	 *
 	 * @param array $args The query arguments to use to retrieve downgrades.
 	 *
@@ -188,7 +188,7 @@ class PMProrate_Downgrade {
 	/**
 	 * Create a new downgrade.
 	 *
-	 * @since TBD
+	 * @since 1.0
 	 *
 	 * @param int $user_id The user ID to be downgraded.
 	 * @param int $original_level_id The level ID that the user will be downgraded from.
@@ -234,7 +234,7 @@ class PMProrate_Downgrade {
 	/**
 	 * Magic getter to retrieve protected properties.
 	 *
-	 * @since TBD
+	 * @since 1.0
 	 *
 	 * @param string $name The name of the property to retrieve.
 	 * @return mixed The value of the property.
@@ -248,7 +248,7 @@ class PMProrate_Downgrade {
 	/**
 	 * Magic isset to check protected properties.
 	 *
-	 * @since TBD
+	 * @since 1.0
 	 *
 	 * @param string $name The name of the property to check.
 	 * @return bool Whether the property is set.
@@ -263,7 +263,7 @@ class PMProrate_Downgrade {
 	/**
 	 * Update the downgrade status.
 	 *
-	 * @since TBD
+	 * @since 1.0
 	 *
 	 * @param string $status The new status.
 	 */
@@ -305,7 +305,7 @@ class PMProrate_Downgrade {
 	/**
 	 * Process the downgrade.
 	 *
-	 * @since TBD
+	 * @since 1.0
 	 *
 	 * @param MemberOrder|null $renewal_order The renewal order object if the downgrade is being processed on a renewal payment. Null if the downgrade is being processed on expiration.
 	 *
@@ -403,7 +403,7 @@ class PMProrate_Downgrade {
 	/**
 	 * Get downgrade text to show to the user.
 	 *
-	 * @since TBD
+	 * @since 1.0
 	 *
 	 * @return string|false The downgrade text or false if the downgrade text could not be retrieved.
 	 */

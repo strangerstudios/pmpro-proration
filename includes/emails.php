@@ -2,7 +2,7 @@
 /**
  * Add proration-specific templates to the email templates.
  *
- * @since TBD
+ * @since 1.0
  *
  * @param array $templates that can be edited.
  * @return array $templates that can be edited.
@@ -46,7 +46,7 @@ add_filter( 'pmproet_templates', 'pmprorate_template_callback');
 /**
  * Default email content for the delayed_downgrade_scheduled email template.
  *
- * @since TBD
+ * @since 1.0
  *
  * @return string
  */
@@ -64,7 +64,7 @@ function pmprorate_get_default_delayed_downgrade_scheduled_email_body() {
 /**
  * Default email content for the delayed_downgrade_scheduled_admin email template.
  *
- * @since TBD
+ * @since 1.0
  *
  * @return string
  */
@@ -82,7 +82,7 @@ function pmprorate_get_default_delayed_downgrade_scheduled_admin_email_body() {
 /**
  * Default email content for the delayed_downgrade_processed email template.
  *
- * @since TBD
+ * @since 1.0
  *
  * @return string
  */
@@ -100,7 +100,7 @@ function pmprorate_get_default_delayed_downgrade_processed_email_body() {
 /**
  * Default email content for the delayed_downgrade_processed_admin email template.
  *
- * @since TBD
+ * @since 1.0
  *
  * @return string
  */
@@ -118,7 +118,7 @@ function pmprorate_get_default_delayed_downgrade_processed_admin_email_body() {
 /**
  * Default email content for the delayed_downgrade_error_admin email template.
  *
- * @since TBD
+ * @since 1.0
  *
  * @return string
  */
