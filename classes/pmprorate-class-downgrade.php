@@ -380,7 +380,7 @@ class PMProrate_Downgrade {
 			'display_name' => $user->display_name,
 			'sitename' => get_bloginfo( 'name' ),
 			'login_url' => wp_login_url(),
-			'edit_member_downgrade_url' => admin_url( 'admin.php?page=pmpro-member&user_id=' . $user_id . '&pmpro_member_edit_panel=pmprorate-downgrades' ),
+			'edit_member_downgrade_url' => admin_url( 'admin.php?page=pmpro-member&user_id=' . $this->user_id . '&pmpro_member_edit_panel=pmprorate-downgrades' ),
 		);
 
 		// Send email to user.
