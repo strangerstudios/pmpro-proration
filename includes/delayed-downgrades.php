@@ -46,9 +46,14 @@ function pmprorate_added_order_mark_order_as_downgrade( $order ) {
 		return;
 	}
 
+	// Get the level for this order.
+	$level = $order->getMembershipLevelAtCheckout();
+
 	// Update order meta.
-	if ( ! empty( $pmprorate_is_downgrade ) ) {
+	if ( ! empty( $pmprorate_is_downgrade ) ) { // This will only ever be set before PMPro v3.4.
 		update_pmpro_membership_order_meta( $order->id, 'pmprorate_is_downgrade', $pmprorate_is_downgrade );
+	} elseif( ! empty( $level->pmprorate_is_downgrade ) ) { // This will only ever be set after PMPro v3.4.
+		update_pmpro_membership_order_meta( $order->id, 'pmprorate_is_downgrade', $level->pmprorate_is_downgrade );
 	}
 }
 
@@ -79,10 +84,13 @@ function pmprorate_checkout_before_change_membership_level_remember_downgrade( $
 		$order->membership_id = $pmpro_level->id;
 	}
 
+	// Get the level for the order.
+	$level = $order->getMembershipLevelAtCheckout();
+
 	// If this order was not marked as a downgrade, bail.
 	// $pmprorate_is_downgrade checks if the checkout started processing on this page load.
 	// Checking order meta checks if the checkout started processing on a previous page load, such as with offsite payment gateways.
-	if ( empty( get_pmpro_membership_order_meta( $order->id, 'pmprorate_is_downgrade', true ) ) && empty( $pmprorate_is_downgrade) ) {
+	if ( empty( get_pmpro_membership_order_meta( $order->id, 'pmprorate_is_downgrade', true ) ) && empty( $pmprorate_is_downgrade ) && empty( $level->pmprorate_is_downgrade ) ) {
 		return;
 	}
 

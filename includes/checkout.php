@@ -168,10 +168,23 @@ function pmprorate_pmpro_checkout_level( $level ) {
 		$level->initial_payment = 0;
 
 		// If purchasing a subscription, make sure payment date stays the same.
-		add_filter( 'pmpro_profile_start_date', 'pmprorate_set_startdate_to_next_payment_date', 10, 2 );
+		// Check if we are using PMPro v3.4+. That version starts supporting the `profile_start_date` property on the level object.
+		if ( defined( 'PMPRO_VERSION' ) && version_compare( PMPRO_VERSION, '3.4', '>=' ) ) {
+			// Get the subscription.
+			$current_subscriptions = PMPro_Subscription::get_subscriptions_for_user( get_current_user_id(), $clevel_id );
 
-		// Set up the delayed downgrade.
-		$pmprorate_is_downgrade = true;
+			// Use the new `profile_start_date` property on the level object.
+			$level->profile_start_date = empty( $current_subscriptions ) ? null : $current_subscriptions[0]->get_next_payment_date( 'Y-m-d H:i:s' );
+
+			// Remember the fact that this is a downgrade.
+			$level->pmprorate_is_downgrade = true;
+		} else {
+			// Use the old filter.
+			add_filter( 'pmpro_profile_start_date', 'pmprorate_set_startdate_to_next_payment_date', 10, 2 );
+
+			// Set up the delayed downgrade.
+			$pmprorate_is_downgrade = true;
+		}
 
 		// Bail to avoid further proration logic.
 		return $level;
@@ -262,8 +275,15 @@ function pmprorate_pmpro_checkout_level( $level ) {
 		$remaining_cost_for_new_level = $level->billing_amount * $per_left;
 		$level->initial_payment = min( $level->initial_payment, round( $remaining_cost_for_new_level - $credit, 2 ) );
 		
-		//make sure payment date stays the same
-		add_filter( 'pmpro_profile_start_date', 'pmprorate_set_startdate_to_next_payment_date', 10, 2 );			
+		// If purchasing a subscription, make sure payment date stays the same.
+		// Check if we are using PMPro v3.4+. That version starts supporting the `profile_start_date` property on the level object.
+		if ( defined( 'PMPRO_VERSION' ) && version_compare( PMPRO_VERSION, '3.4', '>=' ) ) {
+			// Use the new `profile_start_date` property on the level object.
+			$level->profile_start_date = date_i18n( 'Y-m-d H:i:s', $next_payment_date );
+		} else {
+			// Use the old filter.
+			add_filter( 'pmpro_profile_start_date', 'pmprorate_set_startdate_to_next_payment_date', 10, 2 );
+		}		
 	} else {
 		/*
 			Upgrade with different payment periods in a nutshell:
