@@ -1,11 +1,13 @@
 <?php
 /*
-Plugin Name: Paid Memberships Pro - Proration Add On
-Plugin URI: http://www.paidmembershipspro.com/wp/pmpro-proration/
-Description: Simple proration for membership level upgrades and downgrades.
-Version: 1.0
-Author: Paid Memberships Pro
-Author URI: https://www.paidmembershipspro.com
+ * Plugin Name: Paid Memberships Pro - Proration Add On
+ * Plugin URI: http://www.paidmembershipspro.com/wp/pmpro-proration/
+ * Description: Simple proration for membership level upgrades and downgrades.
+ * Version: 1.0
+ * Author: Paid Memberships Pro
+ * Author URI: https://www.paidmembershipspro.com
+ * Text Domain: pmpro-proration
+ * Domain Path: /languages
 */
 
 define( 'PMPRORATE_DIR', dirname( __FILE__ ) );
