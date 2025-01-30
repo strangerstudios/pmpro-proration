@@ -410,7 +410,7 @@ class PMProrate_Downgrade {
 	public function get_downgrade_text() {
 		// Get the name of the level that is being downgraded to.
 		$downgrading_to_level = pmpro_getLevel( $this->new_level_id );
-		$downgrading_to_level_name = empty( $downgrading_to_level ) ? sprintf( esc_html__( '[deleted level #%d]', 'pmpro-prorate' ), $this->new_level_id ) : $downgrading_to_level->name;
+		$downgrading_to_level_name = empty( $downgrading_to_level ) ? sprintf( esc_html__( '[deleted level #%d]', 'pmpro-proration' ), $this->new_level_id ) : $downgrading_to_level->name;
 
 		// Get the order for this downgrade.
 		$order = MemberOrder::get_order( $this->downgrade_order_id );
@@ -431,7 +431,7 @@ class PMProrate_Downgrade {
 		// Generate the downgrade text and return.
 		if ( empty( $subscription_next_payment_date ) && empty( $expiration_date ) ) {
 			// If we don't have a next payment date for the subscription or an expiration date for the membership, then we don't know when the downgrade will be processed.
-			return sprintf( esc_html__( 'Downgrading to %s.', 'pmpro-prorate' ), $downgrading_to_level_name );
+			return sprintf( esc_html__( 'Downgrading to %s.', 'pmpro-proration' ), $downgrading_to_level_name );
 		} else {
 			// We have a date for the downgrade. Use the earlier of the next payment date or the expiration date.
 			if ( empty( $subscription_next_payment_date ) && ! empty( $expiration_date ) ) {
@@ -441,7 +441,7 @@ class PMProrate_Downgrade {
 			} else {
 				$downgrade_date = ( $subscription_next_payment_date < $expiration_date ) ? $subscription->get_next_payment_date( 'date_format' ) : date_i18n( get_option( 'date_format' ), $expiration_date );
 			}
-			return sprintf( esc_html__( 'Downgrading to %s on %s.', 'pmpro-prorate' ), $downgrading_to_level_name, $downgrade_date );
+			return sprintf( esc_html__( 'Downgrading to %s on %s.', 'pmpro-proration' ), $downgrading_to_level_name, $downgrade_date );
 		}
 	}
 }
