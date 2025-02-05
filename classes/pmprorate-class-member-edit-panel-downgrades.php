@@ -6,7 +6,7 @@ class PMProrate_Member_Edit_Panel_Downgrades extends PMPro_Member_Edit_Panel {
 	 */
 	public function __construct() {
 		$this->slug = 'pmprorate-downgrades';
-		$this->title = esc_html__( 'Delayed Downgrades', 'pmpro-prorate' );
+		$this->title = esc_html__( 'Delayed Downgrades', 'pmpro-proration' );
 	}
 
 	/**
@@ -25,7 +25,7 @@ class PMProrate_Member_Edit_Panel_Downgrades extends PMPro_Member_Edit_Panel {
 		// If there are no downgrades, display a message and return.
 		if ( empty( $downgrades ) ) {
 			?>
-			<p><?php esc_html_e( 'There are no downgrades for this user.', 'pmpro-prorate' ); ?></p>
+			<p><?php esc_html_e( 'There are no downgrades for this user.', 'pmpro-proration' ); ?></p>
 			<?php
 			return;
 		}
@@ -35,11 +35,11 @@ class PMProrate_Member_Edit_Panel_Downgrades extends PMPro_Member_Edit_Panel {
 		<table class="wp-list-table widefat fixed striped">
 			<thead>
 				<tr>
-					<th><?php esc_html_e( 'ID', 'pmpro-prorate' ); ?></th>
-					<th><?php esc_html_e( 'Downgrading From', 'pmpro-prorate' ); ?></th>
-					<th><?php esc_html_e( 'Downgrading To', 'pmpro-prorate' ); ?></th>
-					<th><?php esc_html_e( 'Order', 'pmpro-prorate' ); ?></th>
-					<th><?php esc_html_e( 'Status', 'pmpro-prorate' ); ?></th>
+					<th><?php esc_html_e( 'ID', 'pmpro-proration' ); ?></th>
+					<th><?php esc_html_e( 'Downgrading From', 'pmpro-proration' ); ?></th>
+					<th><?php esc_html_e( 'Downgrading To', 'pmpro-proration' ); ?></th>
+					<th><?php esc_html_e( 'Order', 'pmpro-proration' ); ?></th>
+					<th><?php esc_html_e( 'Status', 'pmpro-proration' ); ?></th>
 				</tr>
 			</thead>
 			<tbody>
@@ -47,9 +47,9 @@ class PMProrate_Member_Edit_Panel_Downgrades extends PMPro_Member_Edit_Panel {
 				foreach ( $downgrades as $downgrade ) {
 					// Get the level names to display.
 					$downgrading_from_level = pmpro_getLevel( $downgrade->original_level_id );
-					$downgrading_from_level_name = empty( $downgrading_from_level ) ? sprintf( esc_html__( '[deleted level #%d]', 'pmpro-prorate' ), $downgrade->original_level_id ) : $downgrading_from_level->name;
+					$downgrading_from_level_name = empty( $downgrading_from_level ) ? sprintf( esc_html__( '[deleted level #%d]', 'pmpro-proration' ), $downgrade->original_level_id ) : $downgrading_from_level->name;
 					$downgrading_to_level = pmpro_getLevel( $downgrade->new_level_id );
-					$downgrading_to_level_name = empty( $downgrading_to_level ) ? sprintf( esc_html__( '[deleted level #%d]', 'pmpro-prorate' ), $downgrade->new_level_id ) : $downgrading_to_level->name;
+					$downgrading_to_level_name = empty( $downgrading_to_level ) ? sprintf( esc_html__( '[deleted level #%d]', 'pmpro-proration' ), $downgrade->new_level_id ) : $downgrading_to_level->name;
 
 					// Get the order object and link.
 					$downgrade_order = new MemberOrder( $downgrade->downgrade_order_id );
@@ -62,19 +62,19 @@ class PMProrate_Member_Edit_Panel_Downgrades extends PMPro_Member_Edit_Panel {
 							$status_class = 'pmpro_tag pmpro_tag-has_icon pmpro_tag-alert';
 							break;
 						case 'downgraded_on_renewal':
-							$status_text = esc_html__( 'Processed on renewal', 'pmpro-prorate' );
+							$status_text = esc_html__( 'Processed on renewal', 'pmpro-proration' );
 							$status_class = 'pmpro_tag pmpro_tag-has_icon pmpro_tag-success';
 							break;
 						case 'downgraded_on_expiration':
-							$status_text = esc_html__( 'Processed on expiration', 'pmpro-prorate' );
+							$status_text = esc_html__( 'Processed on expiration', 'pmpro-proration' );
 							$status_class = 'pmpro_tag pmpro_tag-has_icon pmpro_tag-success';
 							break;
 						case 'lost_original_level':
-							$status_text = esc_html__( 'Lost original level', 'pmpro-prorate' );
+							$status_text = esc_html__( 'Lost original level', 'pmpro-proration' );
 							$status_class = 'pmpro_tag pmpro_tag-has_icon pmpro_tag-error';
 							break;
 						case 'error':
-							$status_text = esc_html__( 'Error', 'pmpro-prorate' );
+							$status_text = esc_html__( 'Error', 'pmpro-proration' );
 							$status_class = 'pmpro_tag pmpro_tag-has_icon pmpro_tag-error';
 							break;
 					}
