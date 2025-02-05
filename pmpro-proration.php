@@ -3,7 +3,7 @@
  * Plugin Name: Paid Memberships Pro - Proration Add On
  * Plugin URI: http://www.paidmembershipspro.com/wp/pmpro-proration/
  * Description: Simple proration for membership level upgrades and downgrades.
- * Version: 1.0
+ * Version: 1.0.1
  * Author: Paid Memberships Pro
  * Author URI: https://www.paidmembershipspro.com
  * Text Domain: pmpro-proration
