@@ -1,6 +1,6 @@
 ---
 name: "🐛 Bug Report"
-about: Report a bug if something isn't working as expected in Paid Memberships Pro - Proration.
+about: Report a bug if something isn't working as expected in Paid Memberships Pro - Proration and Delayed Downgrades.
 title: ''
 labels: 'bug'
 assignees: ''

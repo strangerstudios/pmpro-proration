@@ -35,4 +35,4 @@ Here are some ways for **non-developers to contribute** to Paid Memberships Pro 
 
 1. Translate Paid Memberships Pro - Proration into your own [language](https://www.paidmembershipspro.com/paid-memberships-pro-in-your-language/).
 2. [Purchase a paid membership](https://www.paidmembershipspro.com/pricing) to help fund ongoing development and bug fixes.
-3. Leave an honest review for [Paid Memberships Pro - Proration](https://www.paidmembershipspro.com/submit-testimonial/).
+3. Leave an honest review for [Paid Memberships Pro - Proration and Delayed Downgrades](https://www.paidmembershipspro.com/submit-testimonial/).
