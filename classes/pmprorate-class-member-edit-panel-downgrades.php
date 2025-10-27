@@ -53,7 +53,7 @@ class PMProrate_Member_Edit_Panel_Downgrades extends PMPro_Member_Edit_Panel {
 
 					// Get the order object and link.
 					$downgrade_order = new MemberOrder( $downgrade->downgrade_order_id );
-					$downgrade_order_link = add_query_arg( array( 'page' => 'pmpro-orders', 'order' => $downgrade->downgrade_order_id ), admin_url( 'admin.php' ) );
+					$downgrade_order_link = add_query_arg( array( 'page' => 'pmpro-orders', 'order' => $downgrade->downgrade_order_id, 'id' => $downgrade->downgrade_order_id ), admin_url( 'admin.php' ) );
 
 					// Get the status text and class to show.
 					switch ( $downgrade->status ) {
