@@ -45,7 +45,7 @@ function pmprorate_template_callback( $templates ) {
 /**
  * Either requires PMPro Email Templates or adds the templates to the email templates.
  *
- * @since TBD
+ * @since 1.0.2
  */
 function pmprorate_add_templates() {
 	if (  class_exists( 'PMPro_Email_Template' ) ) {

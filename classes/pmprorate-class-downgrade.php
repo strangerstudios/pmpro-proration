@@ -467,7 +467,7 @@ class PMProrate_Downgrade {
 	/**
 	 * Get a test downgrade.
 	 *
-	 * @since TBD
+	 * @since 1.0.2
 	 *
 	 * @return PMProrate_Downgrade The test downgrade object.
 	 */

@@ -3,7 +3,7 @@ Contributors: strangerstudios
 Tags: pmpro, paid memberships pro, members, memberships, prorated, prorate, proration, upgrade, downgrade
 Requires at least: 3.0
 Tested up to: 6.7
-Stable tag: 1.0.1
+Stable tag: 1.0.2
 
 Simple proration for membership upgrades and downgrades to maintain a member's payment date and adjust initial payment at membership checkout.
 
@@ -23,6 +23,10 @@ For sites that are using PMPro v3.0+, prorated amounts are calculated based on t
 1. Activate the plugin through the 'Plugins' menu in WordPress.
 
 == Changelog ==
+= 1.0.2 - 2025-12-16 =
+* ENHANCEMENT: Now showing the correct email template variables when editing "delayed downgrade" email templates. #32 (@MaximilianoRicoTabo)
+* BUG FIX: Fixed broken order links on the "Delayed Downgrades" member edit panels when using PMPro v3.6+. #34 (@dparker1005)
+
 = 1.0.1 - 2025-02-05 =
 * BUG FIX/ENHANCEMENT: Now setting profile start dates directly on level objects for sites running PMPro v3.4+ to avoid conflicts with custom code. #29 (@dparker1005)
 * BUG FIX: Fixed the `!!edit_member_downgrade_url!!` email template variable generating an incorrect URL. #27 (@dwanjuki) 
