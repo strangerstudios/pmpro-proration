@@ -289,16 +289,23 @@ class PMProrate_Downgrade {
 
 		// If the order is now in an error state, send an email to the admin.
 		if ( $this->status === 'error' ) {
-			$data = array(
-				'display_name' => get_userdata( $this->user_id )->display_name,
-				'sitename' => get_bloginfo( 'name' ),
+			//Check PMPro is v3.4+ and use the new email template if so.
+			if ( class_exists( 'PMPro_Email_Template' ) ) {
+				$user = get_userdata( $this->user_id );
+				$email_admin = new PMPro_Email_Template_PMProRate_Delayed_Downgrade_Error_Admin( $user );
+				$email_admin->send();
+			} else {
+				$data = array(
+					'display_name' => get_userdata( $this->user_id )->display_name,
+					'sitename' => get_bloginfo( 'name' ),
 				'edit_member_downgrade_url' => admin_url( 'admin.php?page=pmpro-member&user_id=' . $this->user_id . '&pmpro_member_edit_panel=pmprorate-downgrades' ),
 			);
-			$email_admin = new PMProEmail();
-			$email_admin->template = 'delayed_downgrade_error_admin';
-			$email_admin->email = get_bloginfo( 'admin_email' );
-			$email_admin->data = $data;
-			$email_admin->sendEmail();
+				$email_admin = new PMProEmail();
+				$email_admin->template = 'delayed_downgrade_error_admin';
+				$email_admin->email = get_bloginfo( 'admin_email' );
+				$email_admin->data = $data;
+				$email_admin->sendEmail();
+			}
 		}
 	}
 
@@ -376,29 +383,41 @@ class PMProrate_Downgrade {
 		
 		// Prepare emails stating that the downgrade has been processed.
 		$user = get_userdata( $this->user_id );
-		$data = array(
-			'display_name' => $user->display_name,
-			'sitename' => get_bloginfo( 'name' ),
-			'login_url' => wp_login_url(),
-			'edit_member_downgrade_url' => admin_url( 'admin.php?page=pmpro-member&user_id=' . $this->user_id . '&pmpro_member_edit_panel=pmprorate-downgrades' ),
-		);
 
-		// Send email to user.
-		$data['header_name'] = $user->display_name;
-		$email = new PMProEmail();
-		$email->template = 'delayed_downgrade_processed';
-		$email->email = $user->user_email;
-		$email->data = $data;
-		$email->sendEmail();
+		//Check PMPro is v3.4+ and use the new email template if so.
+		if ( class_exists( 'PMPro_Email_Template' ) ) {
+			//Send the new email template to the user.
+			$email_user = new PMPro_Email_Template_PMProRate_Delayed_Downgrade_Processed( $user );
+			$email_user->send();
+			//Send the new email template to the admin.
+			$email_admin = new PMPro_Email_Template_PMProRate_Delayed_Downgrade_Processed_Admin( $user );
+			$email_admin->send();
+		} else {
+			//Send the old email template to the user.
+			$data = array(
+				'display_name' => $user->display_name,
+				'sitename' => get_bloginfo( 'name' ),
+				'login_url' => wp_login_url(),
+				'edit_member_downgrade_url' => admin_url( 'admin.php?page=pmpro-member&user_id=' . $this->user_id . '&pmpro_member_edit_panel=pmprorate-downgrades' ),
+			);
 
-		// Send email to the site admin.
-		unset( $data['header_name'] );
-		$email_admin = new PMProEmail();
-		$email_admin->template = 'delayed_downgrade_processed_admin';
-		$email_admin->email = get_bloginfo( 'admin_email' );
-		$email_admin->data = $data;
-		$email_admin->sendEmail();
+			// Send email to user.
+			$data['header_name'] = $user->display_name;
+			$email = new PMProEmail();
+			$email->template = 'delayed_downgrade_processed';
+			$email->email = $user->user_email;
+			$email->data = $data;
+			$email->sendEmail();
+
+			// Send email to the site admin.
+			unset( $data['header_name'] );
+			$email_admin = new PMProEmail();
+			$email_admin->template = 'delayed_downgrade_processed_admin';
+			$email_admin->email = get_bloginfo( 'admin_email' );
+			$email_admin->data = $data;
+			$email_admin->sendEmail();
 		}
+	}
 
 	/**
 	 * Get downgrade text to show to the user.
@@ -443,5 +462,22 @@ class PMProrate_Downgrade {
 			}
 			return sprintf( esc_html__( 'Downgrading to %s on %s.', 'pmpro-proration' ), $downgrading_to_level_name, $downgrade_date );
 		}
+	}
+
+	/**
+	 * Get a test downgrade.
+	 *
+	 * @since TBD
+	 *
+	 * @return PMProrate_Downgrade The test downgrade object.
+	 */
+	public static function get_test_downgrade() {
+		$downgrade = new self( 1 );
+		$downgrade->user_id = 1;
+		$downgrade->original_level_id = 1;
+		$downgrade->new_level_id = 2;
+		$downgrade->downgrade_order_id = 1;
+		$downgrade->status = 'pending';
+		return $downgrade;
 	}
 }

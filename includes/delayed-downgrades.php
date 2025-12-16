@@ -153,33 +153,36 @@ function pmprorate_checkout_before_change_membership_level_remember_downgrade( $
 
 	// Prepare emails stating that their membership will be downgraded.
 	$user = get_userdata( $user_id );
-	$data = array(
-		'display_name' => $user->display_name,
-		'sitename' => get_bloginfo( 'name' ),
-		'login_url' => wp_login_url(),
-		'pmprorate_downgrade_text' => $downgrade->get_downgrade_text(),
-		'edit_member_downgrade_url' => admin_url( 'admin.php?page=pmpro-member&user_id=' . $user_id . '&pmpro_member_edit_panel=pmprorate-downgrades' ),
-	);
 
-	// Send email to user.
-	$data['header_name'] = $user->display_name;
-	$email = new PMProEmail();
-	$email->template = 'delayed_downgrade_scheduled';
-	$email->email = $user->user_email;
-	$email->data = $data;
-	$email->sendEmail();
+	//Check PMPro is v3.4+ and use the new email template if so.
+		if ( class_exists( 'PMPro_Email_Template' ) ) {
+			// Send the new email template to the user.
+			$email_user = new PMPro_Email_Template_PMProRate_Delayed_Downgrade_Scheduled( $user, $downgrade );
+			$email_user->send();
+			// Send the new email template to the admin.
+			$email_admin = new PMPro_Email_Template_PMProRate_Delayed_Downgrade_Scheduled_Admin( $user, $downgrade );
+			$email_admin->send();
+		} else {
+			// Send email to user.
+			$data['header_name'] = $user->display_name;
+			$email = new PMProEmail();
+			$email->template = 'delayed_downgrade_scheduled';
+			$email->email = $user->user_email;
+			$email->data = $data;
+			$email->sendEmail();
 
-	// Send email to the site admin.
-	unset( $data['header_name'] );
-	$email_admin = new PMProEmail();
-	$email_admin->template = 'delayed_downgrade_scheduled_admin';
-	$email_admin->email = get_bloginfo( 'admin_email' );
-	$email_admin->data = $data;
-	$email_admin->sendEmail();
+			// Send email to the site admin.
+			unset( $data['header_name'] );
+			$email_admin = new PMProEmail();
+			$email_admin->template = 'delayed_downgrade_scheduled_admin';
+			$email_admin->email = get_bloginfo( 'admin_email' );
+			$email_admin->data = $data;
+			$email_admin->sendEmail();
+		}
 
-	// Redirect to the invoice page instead of changing the user's level and completing the checkout process.
-	wp_redirect( add_query_arg( 'invoice', $order->code, pmpro_url( 'invoice' ) ) );
-	exit;
+		// Redirect to the invoice page instead of changing the user's level and completing the checkout process.
+		wp_redirect( add_query_arg( 'invoice', $order->code, pmpro_url( 'invoice' ) ) );
+		exit;
 }
 
 /**
@@ -344,6 +347,7 @@ function pmprorate_member_edit_panels_downgrades( $panels ) {
  * @param int $level_id The ID of the level being expired.
  */
 function pmprorate_membership_pre_membership_expiry( $user_id, $level_id ) {
+
 	// Check if the user has a pending downgrade for this level.
 	$downgrade_query_args = array(
 		'user_id' => $user_id,

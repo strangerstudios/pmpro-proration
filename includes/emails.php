@@ -41,7 +41,25 @@ function pmprorate_template_callback( $templates ) {
 	
 	return $templates;
 }
-add_filter( 'pmproet_templates', 'pmprorate_template_callback');
+
+/**
+ * Either requires PMPro Email Templates or adds the templates to the email templates.
+ *
+ * @since TBD
+ */
+function pmprorate_add_templates() {
+	if (  class_exists( 'PMPro_Email_Template' ) ) {
+		require_once( PMPRORATE_DIR . '/classes/email-templates/class-pmpro-email-template-pmpro-proration-delayed-downgrade-scheduled.php' );
+		require_once( PMPRORATE_DIR . '/classes/email-templates/class-pmpro-email-template-pmpro-proration-delayed-downgrade-scheduled-admin.php' );
+		require_once( PMPRORATE_DIR . '/classes/email-templates/class-pmpro-email-template-pmpro-proration-delayed-downgrade-processed.php' );
+		require_once( PMPRORATE_DIR . '/classes/email-templates/class-pmpro-email-template-pmpro-proration-delayed-downgrade-processed-admin.php' );
+		require_once( PMPRORATE_DIR . '/classes/email-templates/class-pmpro-email-template-pmpro-proration-delayed-downgrade-error-admin.php' );
+	} else {
+		add_filter( 'pmproet_templates', 'pmprorate_template_callback');
+	}
+
+}
+add_action( 'init', 'pmprorate_add_templates', 8 );
 
 /**
  * Default email content for the delayed_downgrade_scheduled email template.
