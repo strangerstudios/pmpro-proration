@@ -15,7 +15,6 @@ class PMPro_Email_Template_PMProRate_Delayed_Downgrade_Processed_Admin extends P
 	 * @since TBD
 	 *
 	 * @param WP_User $user The user downgrading.
-	 * @param PMProrate_Downgrade $downgrade The downgrade object.
 	 */
 	public function __construct( WP_User $user ) {
 		$this->user = $user;
@@ -140,10 +139,7 @@ class PMPro_Email_Template_PMProRate_Delayed_Downgrade_Processed_Admin extends P
 	 */
 	public static function get_test_email_constructor_args() {
 		global $current_user;
-
-		//Create test downgrade.
-		$test_downgrade = PMProrate_Downgrade::get_test_downgrade();
-		return array( $current_user, $test_downgrade );
+		return array( $current_user );
 	}
 }
 /**

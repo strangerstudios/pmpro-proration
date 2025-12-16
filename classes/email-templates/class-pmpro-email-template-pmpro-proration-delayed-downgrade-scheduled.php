@@ -48,7 +48,7 @@ class PMPro_Email_Template_PMProRate_Delayed_Downgrade_Scheduled extends PMPro_E
 	 * @return string The "nice name" of the email template.
 	 */
 	public static function get_template_name() {
-		return esc_html__( 'Proration Downgrade Scheduled', 'pmpro-prorate' );
+		return esc_html__( 'Proration Downgrade Scheduled', 'pmpro-prorations' );
 	}
 
 	/**
@@ -59,7 +59,7 @@ class PMPro_Email_Template_PMProRate_Delayed_Downgrade_Scheduled extends PMPro_E
 	 * @return string The "help text" to display to the admin when editing the email template.
 	 */
 	public static function get_template_description() {
-		return esc_html__( 'This email is sent when a membership downgrade is scheduled.', 'pmpro-prorate' );
+		return esc_html__( 'This email is sent when a membership downgrade is scheduled.', 'pmpro-prorations' );
 	}
 
 	/**
@@ -70,7 +70,7 @@ class PMPro_Email_Template_PMProRate_Delayed_Downgrade_Scheduled extends PMPro_E
 	 * @return string The default subject for the email.
 	 */
 	public static function get_default_subject() {
-		return esc_html( sprintf( __( 'Your downgrade has been scheduled at %s', 'pmpro-prorate' ), get_option( 'blogname' ) ) );
+		return esc_html( sprintf( __( 'Your downgrade has been scheduled at %s', 'pmpro-prorations' ), get_option( 'blogname' ) ) );
 	}
 
 	/**
