@@ -39,7 +39,7 @@ class PMPro_Email_Template_PMProRate_Delayed_Downgrade_Error_Admin extends PMPro
 	 * @return string The "nice name" of the email template.
 	 */
 	public static function get_template_name() {
-		return esc_html__( 'Proration Downgrade Error (Admin)', 'pmpro-prorations' );
+		return esc_html__( 'Proration Downgrade Error (Admin)', 'pmpro-proration' );
 	}
 
 	/**
@@ -50,7 +50,7 @@ class PMPro_Email_Template_PMProRate_Delayed_Downgrade_Error_Admin extends PMPro
 	 * @return string The "help text" to display to the admin when editing the email template.
 	 */
 	public static function get_template_description() {
-		return esc_html__( 'This email is sent to the admin when there is an error processing a membership downgrade.', 'pmpro-prorations' );
+		return esc_html__( 'This email is sent to the admin when there is an error processing a membership downgrade.', 'pmpro-proration' );
 	}
 
 	/**
@@ -61,7 +61,7 @@ class PMPro_Email_Template_PMProRate_Delayed_Downgrade_Error_Admin extends PMPro
 	 * @return string The default subject for the email.
 	 */
 	public static function get_default_subject() {
-		return esc_html( sprintf( __( 'There was an error processing a downgrade at %s', 'pmpro-prorations' ), get_option( 'blogname' ) ) );
+		return esc_html( sprintf( __( 'There was an error processing a downgrade at %s', 'pmpro-proration' ), get_option( 'blogname' ) ) );
 	}
 
 	/**

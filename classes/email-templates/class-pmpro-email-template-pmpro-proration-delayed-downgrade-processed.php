@@ -15,7 +15,6 @@ class PMPro_Email_Template_PMProRate_Delayed_Downgrade_Processed extends PMPro_E
 	 * @since TBD
 	 *
 	 * @param WP_User $user The user downgrading.
-	 * @param PMProrate_Downgrade $downgrade The downgrade object.
 	 */
 	public function __construct( WP_User $user ) {
 		$this->user = $user;
@@ -51,7 +50,7 @@ class PMPro_Email_Template_PMProRate_Delayed_Downgrade_Processed extends PMPro_E
 	 * @return string The "help text" to display to the admin when editing the email template.
 	 */
 	public static function get_template_description() {
-		return esc_html__( 'This email is sent when a membership downgrade is processed.', 'pmpro-prorations' );
+		return esc_html__( 'This email is sent when a membership downgrade is processed.', 'pmpro-proration' );
 	}
 
 	/**
@@ -62,7 +61,7 @@ class PMPro_Email_Template_PMProRate_Delayed_Downgrade_Processed extends PMPro_E
 	 * @return string The default subject for the email.
 	 */
 	public static function get_default_subject() {
-		return esc_html( sprintf( __( 'Your downgrade has been processed at %s', 'pmpro-prorations' ), get_option( 'blogname' ) ) );
+		return esc_html( sprintf( __( 'Your downgrade has been processed at %s', 'pmpro-proration' ), get_option( 'blogname' ) ) );
 	}
 
 	/**
@@ -138,10 +137,7 @@ class PMPro_Email_Template_PMProRate_Delayed_Downgrade_Processed extends PMPro_E
 	 */
 	public static function get_test_email_constructor_args() {
 		global $current_user;
-
-		//Create test downgrade.
-		$test_downgrade = PMProrate_Downgrade::get_test_downgrade();
-		return array( $current_user, $test_downgrade );
+		return array( $current_user );
 	}
 }
 /**
