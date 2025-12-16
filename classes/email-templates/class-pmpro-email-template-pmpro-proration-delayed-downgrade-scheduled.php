@@ -70,7 +70,7 @@ class PMPro_Email_Template_PMProRate_Delayed_Downgrade_Scheduled extends PMPro_E
 	 * @return string The default subject for the email.
 	 */
 	public static function get_default_subject() {
-		return esc_html__( sprintf( __( 'Your downgrade has been scheduled at %s', 'pmpro-prorate' ), get_option( 'blogname' ) ) );
+		return esc_html( sprintf( __( 'Your downgrade has been scheduled at %s', 'pmpro-prorate' ), get_option( 'blogname' ) ) );
 	}
 
 	/**
@@ -81,7 +81,7 @@ class PMPro_Email_Template_PMProRate_Delayed_Downgrade_Scheduled extends PMPro_E
 	 * @return string The default body content for the email.
 	 */
 	public static function get_default_body() {
-		return wp_kses_post( __( pmprorate_get_default_delayed_downgrade_scheduled_email_body() ) );
+		return wp_kses_post( pmprorate_get_default_delayed_downgrade_scheduled_email_body() );
 	}
 
 	/**
@@ -144,31 +144,18 @@ class PMPro_Email_Template_PMProRate_Delayed_Downgrade_Scheduled extends PMPro_E
 	}
 
 	/**
-	 * Send a test email.
+	 * Returns the arguments to send the test email from the abstract class.
 	 *
 	 * @since TBD
 	 *
-	 * @param string $email The email address to send the test email to.
-	 * @return bool Whether the email was sent successfully.
+	 * @return array The arguments to send the test email from the abstract class.
 	 */
-	public static function send_test( $email ) {
+	public static function get_test_email_constructor_args() {
 		global $current_user;
 
-		//Create test order
+		//Create test downgrade.
 		$test_downgrade = PMProrate_Downgrade::get_test_downgrade();
-
-		//Instantiate this class with mock data to get access to the non-static methods
-		$test_checkout_check_template = new PMPro_Email_Template_PMProRate_Delayed_Downgrade_Scheduled( $current_user, $test_downgrade );
-
-		$test_email = new PMProEmail();
-		$test_email->email = $email;
-		$test_email->subject  =  self::get_default_subject();
-		// Add test mail text to the default body
-		$test_email->body = pmpro_email_templates_test_body( self::get_default_body() );
-		$test_email->data = array_merge( $test_checkout_check_template->get_base_email_template_variables(),
-			$test_checkout_check_template->get_email_template_variables() );
-		$test_email->template = self::get_template_slug();
-		return $test_email->sendEmail();
+		return array( $current_user, $test_downgrade );
 	}
 }
 /**

@@ -59,7 +59,7 @@ class PMPro_Email_Template_PMProRate_Delayed_Downgrade_Scheduled_Admin extends P
 	 * @return string The "help text" to display to the admin when editing the email template.
 	 */
 	public static function get_template_description() {
-		return esc_html__( 'This email is sent when a membership downgrade is scheduled. The !!edit_member_downgrade_url!! placeholder variable can be used to show a link to the downgrades list.', 'pmpro-proration' );
+		return esc_html__( 'This email is sent when a membership downgrade is scheduled.', 'pmpro-proration' );
 	}
 
 	/**
@@ -81,7 +81,7 @@ class PMPro_Email_Template_PMProRate_Delayed_Downgrade_Scheduled_Admin extends P
 	 * @return string The default body content for the email.
 	 */
 	public static function get_default_body() {
-		return wp_kses_post( __( pmprorate_get_default_delayed_downgrade_scheduled_admin_email_body() ) );
+		return wp_kses_post( pmprorate_get_default_delayed_downgrade_scheduled_admin_email_body() );
 	}
 
 	/**
@@ -141,34 +141,20 @@ class PMPro_Email_Template_PMProRate_Delayed_Downgrade_Scheduled_Admin extends P
 		return empty( $user->display_name ) ? esc_html__( 'Admin', 'pmpro-proration' ) : $user->display_name;
 	}
 
-	/**	
-	 * Send a test email.
+	/**
+	 * Returns the arguments to send the test email from the abstract class.
 	 *
 	 * @since TBD
 	 *
-	 * @param string $email The email address to send the test email to.
-	 * @return bool Whether the email was sent successfully.
+	 * @return array The arguments to send the test email from the abstract class.
 	 */
-	public static function send_test( $email ) {
+	public static function get_test_email_constructor_args() {
 		global $current_user;
 
-		//Create test order
+		//Create test downgrade.
 		$test_downgrade = PMProrate_Downgrade::get_test_downgrade();
-
-		//Instantiate this class with mock data to get access to the non-static methods
-		$test_checkout_check_template = new PMPro_Email_Template_PMProRate_Delayed_Downgrade_Scheduled_Admin( $current_user, $test_downgrade );
-
-		$test_email = new PMProEmail();
-		$test_email->email = $email;
-		$test_email->subject  =  self::get_default_subject();
-		// Add test mail text to the default body
-		$test_email->body = pmpro_email_templates_test_body( self::get_default_body() );
-		$test_email->data = array_merge( $test_checkout_check_template->get_base_email_template_variables(),
-			$test_checkout_check_template->get_email_template_variables() );
-		$test_email->template = self::get_template_slug();
-		return $test_email->sendEmail();
+		return array( $current_user, $test_downgrade );
 	}
-
 }
 /**
  * Register the email template.
