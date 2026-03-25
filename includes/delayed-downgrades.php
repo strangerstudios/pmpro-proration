@@ -71,6 +71,10 @@ function pmprorate_checkout_before_change_membership_level_remember_downgrade( $
 	// Capture the checkout level early before any hooks (e.g. pmpro-affiliates) can mutate the global.
 	$checkout_level = clone $pmpro_level;
 
+	// Get the actual level definition from the database (without discount code adjustments)
+	// to check if this level truly has recurring billing.
+	$actual_level = pmpro_getLevel( $pmpro_level->id );
+
 	// If we don't have an order, then this checkout is free. Create a free order.
 	if ( empty( $order ) ) {
 		// Get the user's email address.
@@ -119,7 +123,7 @@ function pmprorate_checkout_before_change_membership_level_remember_downgrade( $
 		// If the level being purchased will not have a subscription, set the expiration date for the
 		// user's current membership to the next payment date of their current subscription.
 		// This is so that we know when to downgrade the membership without an active subscription.
-		if ( empty( (float)$checkout_level->billing_amount) ) {
+		if ( empty( (float)$actual_level->billing_amount) ) {
 			// Get the next payment date for the user's current subscription.
 			$next_payment_date = $old_subscriptions[0]->get_next_payment_date( 'Y-m-d H:i:s' );
 			$wpdb->query( $wpdb->prepare( "UPDATE $wpdb->pmpro_memberships_users SET enddate = %s WHERE user_id = %d AND membership_id = %d AND status = 'active'", $next_payment_date, $user_id, $downgrading_from_id ) );
