@@ -72,7 +72,13 @@ class PMPro_Email_Template_PMProRate_Delayed_Downgrade_Error_Admin extends PMPro
 	 * @return string The default body content for the email.
 	 */
 	public static function get_default_body() {
-		return wp_kses_post( pmprorate_get_default_delayed_downgrade_error_admin_email_body() );
+		if ( ! class_exists( 'PMPro_Liquid_Renderer' ) ) {
+			// Running a version of PMPro before liquid email rendering was available.
+			return wp_kses_post( pmprorate_get_default_delayed_downgrade_error_admin_email_body() );
+		}
+		$body = '<p>' . esc_html__( 'There was an error processing a downgrade for {{ display_name }} at {{ sitename }}.', 'pmpro-proration' ) . '</p>' . "\n";
+		$body .= '<p>' . esc_html__( "View the user's downgrade information here:", 'pmpro-proration' ) . ' {{ edit_member_downgrade_url }}</p>' . "\n";
+		return $body;
 	}
 
 	/**
@@ -83,10 +89,16 @@ class PMPro_Email_Template_PMProRate_Delayed_Downgrade_Error_Admin extends PMPro
 	 * @return array The email template variables for the email (key => value pairs).
 	 */
 	public static function get_email_template_variables_with_description() {
-	
+		if ( ! class_exists( 'PMPro_Liquid_Renderer' ) ) {
+			// Running a version of PMPro before liquid email rendering was available.
+			return array(
+				'!!display_name!!' => esc_html__( 'The user\'s display name.', 'pmpro-proration' ),
+				'!!edit_member_downgrade_url!!' => esc_html__( 'The URL to edit the member\'s downgrade.', 'pmpro-proration' ),
+			);
+		}
 		return array(
-			'!!display_name!!' => esc_html__( 'The user\'s display name.', 'pmpro-proration' ),
-			'!!edit_member_downgrade_url!!' => esc_html__( 'The URL to edit the member\'s downgrade.', 'pmpro-proration' ),
+			'{{ display_name }}' => esc_html__( 'The user\'s display name.', 'pmpro-proration' ),
+			'{{ edit_member_downgrade_url }}' => esc_html__( 'The URL to edit the member\'s downgrade.', 'pmpro-proration' ),
 		);
 	}
 
