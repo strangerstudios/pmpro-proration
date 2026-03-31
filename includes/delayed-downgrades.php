@@ -116,7 +116,7 @@ function pmprorate_checkout_before_change_membership_level_remember_downgrade( $
 		// If the level being purchased will not have a subscription, set the expiration date for the
 		// user's current membership to the next payment date of their current subscription.
 		// This is so that we know when to downgrade the membership without an active subscription.
-		if ( empty( (float)$pmpro_level->billing_amount) ) {
+		if ( empty( (float)$level->billing_amount) ) {
 			// Get the next payment date for the user's current subscription.
 			$next_payment_date = $old_subscriptions[0]->get_next_payment_date( 'Y-m-d H:i:s' );
 			$wpdb->query( $wpdb->prepare( "UPDATE $wpdb->pmpro_memberships_users SET enddate = %s WHERE user_id = %d AND membership_id = %d AND status = 'active'", $next_payment_date, $user_id, $downgrading_from_id ) );
@@ -145,7 +145,7 @@ function pmprorate_checkout_before_change_membership_level_remember_downgrade( $
 	}
 
 	// Create the downgrade.
-	$downgrade = PMProrate_Downgrade::create( $user_id, $downgrading_from_id, $pmpro_level->id, $order->id );
+	$downgrade = PMProrate_Downgrade::create( $user_id, $downgrading_from_id, $level->id, $order->id );
 	if ( empty( $downgrade ) ) {
 		// Creating the downgrade failed. Bail and let PMPro handle the checkout normally.
 		return;
