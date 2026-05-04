@@ -85,9 +85,9 @@ class PMPro_Email_Template_PMProRate_Delayed_Downgrade_Scheduled extends PMPro_E
 			// Running a version of PMPro before liquid email rendering was available.
 			return wp_kses_post( pmprorate_get_default_delayed_downgrade_scheduled_email_body() );
 		}
-		$body = '<p>{{ pmprorate_downgrade_text }}</p>' . "\n";
-		$body .= '<p>' . esc_html__( 'Log in to view your account here:', 'pmpro-proration' ) . ' {{ login_url }}</p>' . "\n";
-		return $body;
+		return wp_kses_post( __( '<p>{{ pmprorate_downgrade_text }}</p>
+
+<p>Log in to view your account here: {{ login_url }}</p>', 'pmpro-proration' ) );
 	}
 
 	/**

@@ -85,9 +85,9 @@ class PMPro_Email_Template_PMProRate_Delayed_Downgrade_Scheduled_Admin extends P
 			// Running a version of PMPro before liquid email rendering was available.
 			return wp_kses_post( pmprorate_get_default_delayed_downgrade_scheduled_admin_email_body() );
 		}
-		$body = '<p>' . esc_html__( 'A downgrade for {{ display_name }} has been scheduled at {{ sitename }}.', 'pmpro-proration' ) . '</p>' . "\n";
-		$body .= '<p>' . esc_html__( "View the user's downgrade information here:", 'pmpro-proration' ) . ' {{ edit_member_downgrade_url }}</p>' . "\n";
-		return $body;
+		return wp_kses_post( __( '<p>A downgrade for {{ display_name }} has been scheduled at {{ sitename }}.</p>
+
+<p>View the user\'s downgrade information here: {{ edit_member_downgrade_url }}</p>', 'pmpro-proration' ) );
 	}
 
 	/**
