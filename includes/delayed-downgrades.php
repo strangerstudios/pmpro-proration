@@ -128,11 +128,25 @@ function pmprorate_checkout_before_change_membership_level_remember_downgrade( $
 		}
 	}
 
+	// Clone $pmpro_level so we can restore it after $order->saveOrder().
+	// saveOrder() fires the `pmpro_added_order` action, and some hooks on
+	// that action (e.g. the Affiliates Add On) can overwrite the global
+	// $pmpro_level. We need the original checkout level intact below when
+	// we create the PMProrate_Downgrade so the downgrade records the level
+	// the user is downgrading *to*, not the level they are downgrading from.
+	// We clone (rather than just copy the reference) so a hook that mutates
+	// $pmpro_level's properties doesn't also mutate our backup.
+	$pmpro_level_backup = is_object( $pmpro_level ) ? clone $pmpro_level : $pmpro_level;
+
 	// Update the order's membership level ID to the level that the user is downgrading from.
 	$order->membership_id = $downgrading_from_id;
 	$order->user_id = $user_id;
 	$order->status  = 'success';
 	$order->saveOrder();
+
+	// Restore the original checkout level so PMProrate_Downgrade::create() below
+	// uses the level the user is downgrading to.
+	$pmpro_level = $pmpro_level_backup;
 
 	// Save the data collected at checkout to the order.
 	pmpro_save_checkout_data_to_order( $order );
