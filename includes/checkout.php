@@ -250,6 +250,90 @@ function pmprorate_pmpro_checkout_level( $level ) {
 	// Get the credit for the remaining time on the old level.
 	$credit = $prev_order->subtotal * $per_left;
 
+	/*
+	 * Credit-as-time delay for annual → shorter-period upgrades.
+	 *
+	 * When a member with an active annual (or longer) subscription checks out
+	 * for a recurring level with a shorter cycle period AND a higher cost per
+	 * day, the existing "different payment periods" branch below would charge
+	 * the new level's full initial payment today (minus a partial-month credit
+	 * that almost never offsets a full annual prepayment). The new monthly
+	 * subscription would also start billing immediately, so the customer
+	 * effectively forfeits the unused portion of the annual they prepaid.
+	 *
+	 * Instead, when this is a clear "I want more functionality now" upgrade,
+	 * charge $0 today and defer the new subscription's first billing date by
+	 * the number of days the remaining credit buys at the new daily rate.
+	 *
+	 * Downgrades by cost-per-day already use the delayed-downgrade flow above.
+	 */
+	$old_cycle_period   = $clevel->cycle_period;
+	$old_billing_amount = $clevel->billing_amount;
+	$old_cycle_number   = $clevel->cycle_number;
+	if ( class_exists( 'PMPro_Subscription' ) && ! empty( $current_subscription ) ) {
+		// Prefer the live subscription's billing config (matches what we did for
+		// pmprorate_have_same_payment_period() / pmprorate_isDowngrade()).
+		$old_cycle_period   = $current_subscription->get_cycle_period();
+		$old_billing_amount = $current_subscription->get_billing_amount();
+		$old_cycle_number   = $current_subscription->get_cycle_number();
+	}
+
+	if (
+		'Year' === $old_cycle_period &&
+		in_array( $level->cycle_period, array( 'Day', 'Week', 'Month' ), true ) &&
+		! empty( $level->billing_amount ) &&
+		! empty( $level->cycle_number ) &&
+		$credit > 0
+	) {
+		$old_cost_per_day = pmprorate_get_cost_per_day( $old_billing_amount, $old_cycle_number, $old_cycle_period );
+		$new_cost_per_day = pmprorate_get_cost_per_day( $level->billing_amount, $level->cycle_number, $level->cycle_period );
+
+		if ( $new_cost_per_day > $old_cost_per_day ) {
+			$free_days       = $credit / $new_cost_per_day;
+			$first_charge_ts = current_time( 'timestamp' ) + (int) ceil( $free_days * DAY_IN_SECONDS );
+			$first_charge_date = date_i18n( 'Y-m-d H:i:s', $first_charge_ts );
+
+			/**
+			 * Filter the first-charge date applied when an annual → shorter-period
+			 * upgrade uses credit-as-time delay. Default is today + (remaining
+			 * credit / new level's daily rate).
+			 *
+			 * Return null/false to skip the credit-as-time delay entirely and
+			 * fall through to the standard different-period proration logic.
+			 *
+			 * @since 1.1
+			 *
+			 * @param string $first_charge_date 'Y-m-d H:i:s' date.
+			 * @param float  $credit            Remaining credit from the old subscription.
+			 * @param float  $new_cost_per_day  Per-day cost of the new level.
+			 * @param object $level             The level being purchased.
+			 * @param object $clevel            The level being switched from.
+			 */
+			$first_charge_date = apply_filters(
+				'pmprorate_credit_delay_first_charge_date',
+				$first_charge_date,
+				$credit,
+				$new_cost_per_day,
+				$level,
+				$clevel
+			);
+
+			if ( ! empty( $first_charge_date ) ) {
+				$level->initial_payment = 0;
+
+				if ( defined( 'PMPRO_VERSION' ) && version_compare( PMPRO_VERSION, '3.4', '>=' ) ) {
+					$level->profile_start_date = $first_charge_date;
+				} else {
+					// PMPro 3.0-3.3: route the deferred date through the older filter API.
+					$level->_pmprorate_credit_first_charge = $first_charge_date;
+					add_filter( 'pmpro_profile_start_date', 'pmprorate_credit_delay_set_start_date', 10, 2 );
+				}
+
+				return $level;
+			}
+		}
+	}
+
 	// If changing to a level with a different payment period, keep the "next payment date" the same.
 	if ( pmprorate_have_same_payment_period( $clevel, $level ) ) {
 		/*
@@ -302,6 +386,25 @@ function pmprorate_pmpro_checkout_level( $level ) {
 	return $level;
 }
 add_filter( "pmpro_checkout_level", "pmprorate_pmpro_checkout_level", 10, 1 );
+
+/**
+ * Set the start date for the new subscription when credit-as-time delay
+ * is applied during an annual → shorter-period upgrade. Used on PMPro
+ * 3.0-3.3, where setting the `profile_start_date` property on the level
+ * object is not read by gateways. PMPro 3.4+ uses the property directly.
+ *
+ * @since 1.1
+ *
+ * @param string $startdate The start date for the membership.
+ * @param object $order     The order that is being purchased.
+ * @return string
+ */
+function pmprorate_credit_delay_set_start_date( $startdate, $order ) {
+	if ( ! empty( $order->membership_level->_pmprorate_credit_first_charge ) ) {
+		return $order->membership_level->_pmprorate_credit_first_charge;
+	}
+	return $startdate;
+}
 
 /**
  * Set the date that the first recurring payment will be charged.

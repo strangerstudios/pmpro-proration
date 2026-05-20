@@ -3,7 +3,7 @@ Contributors: strangerstudios
 Tags: pmpro, paid memberships pro, members, memberships, prorated, prorate, proration, upgrade, downgrade
 Requires at least: 3.0
 Tested up to: 6.9
-Stable tag: 1.0.3
+Stable tag: 1.1.0
 
 Simple proration for membership upgrades and downgrades to maintain a member's payment date and adjust initial payment at membership checkout.
 
@@ -23,6 +23,9 @@ For sites that are using PMPro v3.0+, prorated amounts are calculated based on t
 1. Activate the plugin through the 'Plugins' menu in WordPress.
 
 == Changelog ==
+= 1.1.0 - TBD =
+* ENHANCEMENT: Annual → shorter-period upgrades now use a "credit-as-time" delay so members don't forfeit the unused portion of an annual prepayment. When a member with an active annual subscription checks out for a recurring level with a shorter cycle (Month/Week/Day) that costs more per day, the initial payment is set to $0 and the new subscription's first billing date is deferred by the number of days the remaining annual credit buys at the new daily rate. Downgrades by cost-per-day continue to use the existing delayed-downgrade flow. Filter `pmprorate_credit_delay_first_charge_date` to customize.
+
 = 1.0.3 - 2026-05-04 =
 * ENHANCEMENT: Updated all 5 delayed-downgrade email templates to use the new Liquid `{{ variable }}` syntax when running PMPro 3.7 or later, while still falling back to the legacy `!!variable!!` syntax on older versions of PMPro. Default email bodies now use the same `wp_kses_post( __( ... ) )` pattern as PMPro core. #36 (@dparker1005)
 * BUG FIX: Fixed an issue where the delayed downgrade level could be incorrectly recorded as the level being downgraded from (instead of the level being downgraded to) on Stripe onsite checkouts when the Affiliates Add On was active. #37 (@dwanjuki)
