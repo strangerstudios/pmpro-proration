@@ -156,6 +156,33 @@ function pmprorate_pmpro_checkout_level( $level ) {
 		return $level;
 	}
 
+	// In PMPro v3.0+, get the user's current subscription for the level being switched from
+	// once here so the rest of this function doesn't have to refetch it.
+	$current_subscription = null;
+	if ( class_exists( 'PMPro_Subscription' ) ) {
+		$current_subscriptions = PMPro_Subscription::get_subscriptions_for_user( $current_user->ID, $clevel_id );
+		$current_subscription  = empty( $current_subscriptions ) ? null : current( $current_subscriptions );
+
+		// Without an active subscription for the level being switched from there is nothing to
+		// prorate against (no billing amount or next payment date to work from), so let the
+		// checkout proceed normally.
+		if ( empty( $current_subscription ) ) {
+			return $level;
+		}
+
+		// If that subscription is "past due", skip proration. Everything below assumes the
+		// member has paid through their current billing period: it credits the unused portion
+		// of that period and/or defers billing to the subscription's next payment date. Once a
+		// recurring payment has failed none of those assumptions hold -- the most recent order
+		// may even be the failed/`pending` payment itself, which would credit money that was
+		// never collected -- so we let the checkout proceed normally at full price with a new
+		// subscription. PMPro saves a `pending` order whenever a recurring payment fails (since
+		// PMPro 3.6) and core treats any pending order as a missed payment, so we do the same.
+		if ( ! empty( $current_subscription->get_orders( array( 'status' => 'pending', 'limit' => 1 ) ) ) ) {
+			return $level;
+		}
+	}
+
 	// Check if the user should get a delayed downgrade.
 	// This will only work for v3.0+. Otherwise, default migration logic will set the initial payment to $0.
 	if ( class_exists( 'PMPro_Subscription' ) && pmprorate_isDowngrade( $clevel, $level ) ) {
@@ -170,11 +197,8 @@ function pmprorate_pmpro_checkout_level( $level ) {
 		// If purchasing a subscription, make sure payment date stays the same.
 		// Check if we are using PMPro v3.4+. That version starts supporting the `profile_start_date` property on the level object.
 		if ( defined( 'PMPRO_VERSION' ) && version_compare( PMPRO_VERSION, '3.4', '>=' ) ) {
-			// Get the subscription.
-			$current_subscriptions = PMPro_Subscription::get_subscriptions_for_user( get_current_user_id(), $clevel_id );
-
 			// Use the new `profile_start_date` property on the level object.
-			$level->profile_start_date = empty( $current_subscriptions ) ? null : $current_subscriptions[0]->get_next_payment_date( 'Y-m-d H:i:s' );
+			$level->profile_start_date = $current_subscription->get_next_payment_date( 'Y-m-d H:i:s' );
 
 			// Remember the fact that this is a downgrade.
 			$level->pmprorate_is_downgrade = true;
@@ -192,18 +216,7 @@ function pmprorate_pmpro_checkout_level( $level ) {
 
 	// Getting the next payment date and most recent order has different logic for PMPro v2.x and v3.0+.
 	if ( class_exists( 'PMPro_Subscription' ) ) {
-		// Using PMPro v3.0+.
-		// Get the user's current subscription.
-		$current_subscriptions = PMPro_Subscription::get_subscriptions_for_user( get_current_user_id(), $clevel_id );
-
-		// No prorating needed if they don't have a subscription.
-		if ( empty( $current_subscriptions ) ) {
-			return $level;
-		}
-
-		// Get the current subscription.
-		$current_subscription = current( $current_subscriptions );
-
+		// Using PMPro v3.0+. We have already returned above if there is no current subscription.
 		// Get the last payment date and next payment date.
 		$newest_orders = $current_subscription->get_orders( array( 'limit' => 1 ) );
 		if ( empty( $newest_orders ) ) {
