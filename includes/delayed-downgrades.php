@@ -16,7 +16,7 @@ function pmprorate_init_downgrades() {
 	add_filter( 'pmpro_checkout_before_change_membership_level', 'pmprorate_checkout_before_change_membership_level_remember_downgrade', 20, 2 ); // Priority 20 to run after offsite payment gateway redirects.
 
 	// Hook functions to process downgrades.
-	add_action( 'pmpro_added_order', 'pmprorate_added_order_process_downgrade' ); // Running after the order is created so that the new order gets its membership ID changed to the new level.
+	add_action( 'pmpro_subscription_payment_completed', 'pmprorate_subscription_payment_completed_process_downgrade' ); // Process a scheduled downgrade when the subscription's next recurring payment is successfully collected.
 	add_action( 'pmpro_membership_pre_membership_expiry', 'pmprorate_membership_pre_membership_expiry', 10, 2 );
 
 	// Hook function to remove downgrade if the corresponding level is lost.
@@ -286,15 +286,20 @@ function pmprorate_member_edit_panels_downgrades( $panels ) {
 }
 
 /**
- * When an order is created, check if is a part of a subscription.
- * If so, check if the subscription has a downgrade order linked.
- * If so, process the downgrade.
+ * When a subscription's recurring payment is successfully collected, check if the
+ * subscription has a pending downgrade and, if so, process it.
+ *
+ * Hooked to `pmpro_subscription_payment_completed`, which only fires for a successfully
+ * collected recurring payment -- never for the initial checkout order and never for the
+ * `pending` order PMPro saves on a failed payment. A failed/"past due" renewal therefore
+ * cannot trigger the downgrade; it stays pending until a payment clears or the membership
+ * expires.
  *
  * @since 1.0
  *
- * @param MemberOrder $order The order object.
+ * @param MemberOrder $order The order for the recurring payment that was just processed.
  */
- function pmprorate_added_order_process_downgrade( $order ) {
+ function pmprorate_subscription_payment_completed_process_downgrade( $order ) {
 	// Get the subscription for this order.
 	$subscription = $order->get_subscription();
 	if ( empty( $subscription ) ) {
