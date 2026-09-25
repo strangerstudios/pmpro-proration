@@ -1,5 +1,9 @@
 <?php
 
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
 /**
  * Update a start date based on the last payment date and the new payment period.
  *
@@ -56,6 +60,7 @@ function pmprorate_pmpro_getLastRecurringOrderDatetime( $user_id = null ) {
 	$check12 = 0;
 	while ( ! pmprorate_pmpro_isOrderRecurring( $lastorder ) && $check12 ++ < 12 ) {
 
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Deprecated function; PMPro custom table, prepared query.
 		$new_order_id = $wpdb->get_var(
 			$wpdb->prepare(
 				"SELECT id 
@@ -101,6 +106,7 @@ function pmprorate_pmpro_isOrderRecurring( $order, $test_checkout = false ) {
 	}
 
 	//check that we aren't processing at checkout
+	// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Read-only check of whether checkout is being submitted; no state change.
 	if ( $test_checkout && ! empty( $_REQUEST['submit-checkout'] ) ) {
 		return false;
 	}
@@ -128,6 +134,7 @@ function pmprorate_pmpro_isOrderRecurring( $order, $test_checkout = false ) {
 	}
 
 	$sqlQuery .= "LIMIT 1";
+	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Deprecated function; PMPro custom table, prepared query.
 	$earlier_order = $wpdb->get_var( esc_sql( $sqlQuery ) );
 
 	if ( empty( $earlier_order ) ) {
@@ -162,6 +169,7 @@ function pmprorate_pmpro_after_checkout( $user_id ) {
 		) );
 
 		//change their membership level
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Deprecated function; PMPro custom table, prepared query.
 		if ( false === $wpdb->update(
 				$wpdb->pmpro_memberships_users,
 				array( 'membership_id' => $pmpro_checkout_old_level->id ),
@@ -246,6 +254,7 @@ function pmproproate_daily_check_for_membership_changes() {
 	$today = date( "Y-m-d", current_time( 'timestamp' ) );
 
 	//get all users with scheduled level changes
+	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Deprecated function; static query.
 	$level_changes = $wpdb->get_col( "SELECT user_id FROM {$wpdb->usermeta} WHERE meta_key = 'pmpro_change_to_level'" );
 
 	if ( empty( $level_changes ) ) {

@@ -1,5 +1,9 @@
 <?php
 
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
 class PMPro_Email_Template_PMProRate_Delayed_Downgrade_Error_Admin extends PMPro_Email_Template {
 
 	/**
