@@ -1,5 +1,9 @@
 <?php
 
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
 /**
  * Only run this downgrade code if using PMPro v3.0+.
  *
@@ -71,6 +75,7 @@ function pmprorate_checkout_before_change_membership_level_remember_downgrade( $
 	// If we don't have an order, then this checkout is free. Create a free order.
 	if ( empty( $order ) ) {
 		// Get the user's email address.
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Prepared one-off lookup.
 		$bemail = $wpdb->get_var( $wpdb->prepare( "SELECT user_email FROM $wpdb->users WHERE ID = %d LIMIT 1", $user_id ) );
 
 		// Create a free order. Taken from core checkout preheader code.
@@ -119,6 +124,7 @@ function pmprorate_checkout_before_change_membership_level_remember_downgrade( $
 		if ( empty( (float)$pmpro_level->billing_amount) ) {
 			// Get the next payment date for the user's current subscription.
 			$next_payment_date = $old_subscriptions[0]->get_next_payment_date( 'Y-m-d H:i:s' );
+			// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- PMPro custom table, prepared query.
 			$wpdb->query( $wpdb->prepare( "UPDATE $wpdb->pmpro_memberships_users SET enddate = %s WHERE user_id = %d AND membership_id = %d AND status = 'active'", $next_payment_date, $user_id, $downgrading_from_id ) );
 		}
 
@@ -195,6 +201,7 @@ function pmprorate_checkout_before_change_membership_level_remember_downgrade( $
 		}
 
 		// Redirect to the invoice page instead of changing the user's level and completing the checkout process.
+		// phpcs:ignore WordPress.Security.SafeRedirect.wp_redirect_wp_redirect -- pmpro_url() is filterable and may point offsite (e.g. Network Subsite).
 		wp_redirect( add_query_arg( 'invoice', $order->code, pmpro_url( 'invoice' ) ) );
 		exit;
 }

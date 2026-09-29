@@ -1,5 +1,9 @@
 <?php
 
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
 /** 
  * Checks if the "delayed downgrade" flow should be used for this checkout.
  *
@@ -389,6 +393,7 @@ function pmprorate_pmpro_checkout_start_date_keep_startdate( $startdate, $user_i
 			$old_level_id
 		);
 
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.NotPrepared -- PMPro custom table; $sqlQuery is prepared above.
 		$old_startdate = $wpdb->get_var( $sqlQuery );
 
 		if ( ! empty( $old_startdate ) ) {

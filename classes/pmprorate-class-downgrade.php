@@ -1,5 +1,9 @@
 <?php
 
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
 /**
  * The PMPro Prorations downgrade object.
  *
@@ -77,6 +81,7 @@ class PMProrate_Downgrade {
 		global $wpdb;
 
 		if ( is_int( $downgrade ) ) {
+			// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Add On custom table, prepared query.
 			$data = $wpdb->get_row(
 				$wpdb->prepare(
 					"SELECT * FROM {$wpdb->pmprorate_downgrades} WHERE id = %d",
@@ -165,10 +170,12 @@ class PMProrate_Downgrade {
 
 		// Prepare the query.
 		if ( ! empty( $prepared ) ) {
+			// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared -- Query built from placeholders; orderby is validated against a character whitelist above and limit is cast to int.
 			$sql_query = $wpdb->prepare( $sql_query, $prepared );
 		}
 
 		// Get the data.
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.NotPrepared, PluginCheck.Security.DirectDB.UnescapedDBParameter -- Add On custom table; query prepared above, orderby validated and limit cast to int.
 		$downgrade_ids = $wpdb->get_col( $sql_query );
 		if ( empty( $downgrade_ids ) ) {
 			return array();
@@ -211,6 +218,7 @@ class PMProrate_Downgrade {
 		}
 
 		// Create the downgrade in the database.
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Add On custom table insert.
 		$wpdb->insert(
 			$wpdb->pmprorate_downgrades,
 			array(
@@ -277,6 +285,7 @@ class PMProrate_Downgrade {
 
 		// Update the status.
 		$this->status = $status;
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Add On custom table update.
 		$wpdb->update(
 			$wpdb->pmprorate_downgrades,
 			array(

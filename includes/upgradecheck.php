@@ -1,4 +1,9 @@
 <?php
+
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
 /**
  * Run any necessary upgrades to the DB.
  *
@@ -11,6 +16,7 @@ function pmprorate_check_for_upgrades() {
 	global $wpdb;
 	$wpdb->hide_errors();
 	$wpdb->pmprorate_downgrades = $wpdb->prefix . 'pmprorate_downgrades';
+	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Schema check during DB upgrade; table name is built from $wpdb->prefix.
 	$table_exists = $wpdb->query("SHOW TABLES LIKE '" . $wpdb->pmprorate_downgrades . "'");
 	if(!$table_exists)
 		$db_version = 0;

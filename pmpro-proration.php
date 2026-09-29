@@ -10,6 +10,10 @@
  * Domain Path: /languages
 */
 
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
 define( 'PMPRORATE_DIR', dirname( __FILE__ ) );
 
 /**
