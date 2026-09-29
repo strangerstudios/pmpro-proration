@@ -1,5 +1,9 @@
 <?php
 
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
 class PMProrate_Member_Edit_Panel_Downgrades extends PMPro_Member_Edit_Panel {
 	/**
 	 * Set up the panel.

@@ -1,5 +1,9 @@
 <?php
 
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
 /**
  * The PMPro Prorations downgrade object.
  *
@@ -214,7 +218,7 @@ class PMProrate_Downgrade {
 		}
 
 		// Create the downgrade in the database.
-		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery -- Add On custom table insert.
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Add On custom table insert.
 		$wpdb->insert(
 			$wpdb->pmprorate_downgrades,
 			array(

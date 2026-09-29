@@ -134,7 +134,7 @@ function pmprorate_pmpro_isOrderRecurring( $order, $test_checkout = false ) {
 	}
 
 	$sqlQuery .= "LIMIT 1";
-	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Deprecated function; PMPro custom table, prepared query.
+	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Deprecated function; PMPro custom table, prepared query plus an appended internal order ID.
 	$earlier_order = $wpdb->get_var( esc_sql( $sqlQuery ) );
 
 	if ( empty( $earlier_order ) ) {
