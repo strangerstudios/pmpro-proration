@@ -185,6 +185,15 @@ function pmprorate_pmpro_checkout_level( $level ) {
 		if ( ! empty( $current_subscription->get_orders( array( 'status' => 'pending', 'limit' => 1 ) ) ) ) {
 			return $level;
 		}
+
+		// If the subscription's next payment date is missing or has already passed (ex. a missed
+		// payment with no `pending` order), there is no remaining paid time to credit or keep, and
+		// reusing that date would give the new subscription a start date in the past. Let the
+		// checkout proceed normally.
+		$current_next_payment_date = $current_subscription->get_next_payment_date();
+		if ( empty( $current_next_payment_date ) || $current_next_payment_date <= time() ) {
+			return $level;
+		}
 	}
 
 	// Check if the user should get a delayed downgrade.
@@ -243,8 +252,12 @@ function pmprorate_pmpro_checkout_level( $level ) {
 			return $level;
 		}
 
-		// Get the last payment date.
-		$next_payment_date = pmprorate_trim_timestamp( pmpro_next_payment( $current_user->ID ) );
+		// Get the next payment date. Bail if it is missing or has already passed.
+		$next_payment_date = pmpro_next_payment( $current_user->ID );
+		if ( empty( $next_payment_date ) || $next_payment_date <= time() ) {
+			return $level;
+		}
+		$next_payment_date = pmprorate_trim_timestamp( $next_payment_date );
 	}
 
 	// Get the most recent payment date and today's date.
