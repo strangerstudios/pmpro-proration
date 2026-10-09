@@ -38,6 +38,9 @@ function pmprorate_load_compatibility() {
 	if ( function_exists( 'pmprogl_is_gift_level' ) ) {
 		include_once( PMPRORATE_DIR . '/includes/compatibility/pmpro-gift-levels.php' ); // Gift Levels Add On.
 	}
+	if ( function_exists( 'pmproap_get_addon_price_at_checkout' ) ) {
+		include_once( PMPRORATE_DIR . '/includes/compatibility/pmpro-addon-packages.php' ); // Add On Packages Add On.
+	}
 }
 add_action( 'plugins_loaded', 'pmprorate_load_compatibility' );
 
