@@ -31,6 +31,16 @@ include_once( PMPRORATE_DIR . '/includes/emails.php' ); // Handles emails.
 include_once( PMPRORATE_DIR . '/includes/upgradecheck.php' ); // Checks for upgrades.
 include_once( PMPRORATE_DIR . '/includes/deprecated.php' ); // Deprecated functions.
 
+/**
+ * Load compatibility files for other Add Ons once all plugins are loaded.
+ */
+function pmprorate_load_compatibility() {
+	if ( function_exists( 'pmprogl_is_gift_level' ) ) {
+		include_once( PMPRORATE_DIR . '/includes/compatibility/pmpro-gift-levels.php' ); // Gift Levels Add On.
+	}
+}
+add_action( 'plugins_loaded', 'pmprorate_load_compatibility' );
+
 // Set up $wpdb tables.
 global $wpdb;
 $wpdb->pmprorate_downgrades = $wpdb->prefix . 'pmprorate_downgrades';
