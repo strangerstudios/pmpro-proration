@@ -147,6 +147,11 @@ function pmprorate_pmpro_checkout_level( $level ) {
 		return $level;
 	}
 
+	// Bail if this checkout is a purchase that does not replace the member's current plan.
+	if ( pmprorate_is_non_replacement_checkout( $level ) ) {
+		return $level;
+	}
+
 	// Can only prorate if they already have a level.
 	// In PMPro v3.0+, this will only grab a level in the same "one level per group" membership group.
 	$clevel_id = pmproprorate_get_level_id_being_switched_from( $current_user->ID, $level->id );
@@ -319,6 +324,37 @@ function pmprorate_pmpro_checkout_level( $level ) {
 	return $level;
 }
 add_filter( "pmpro_checkout_level", "pmprorate_pmpro_checkout_level", 10, 1 );
+
+/**
+ * Check if a checkout is a purchase that keeps the member's current plan,
+ * so it must not be prorated or treated as a downgrade.
+ *
+ * @since TBD
+ *
+ * @param object $level The level being purchased.
+ * @return bool
+ */
+function pmprorate_is_non_replacement_checkout( $level ) {
+	global $pmprogl_gift_levels;
+
+	// Gift Levels: buying a gift does not change the buyer's own membership.
+	if ( ! empty( $pmprogl_gift_levels ) && array_key_exists( (int) $level->id, $pmprogl_gift_levels ) ) {
+		return true;
+	}
+
+	// Donations: a donation-only level gives the member their old level back.
+	if ( function_exists( 'pmprodon_is_donations_only' ) && pmprodon_is_donations_only( $level->id ) ) {
+		return true;
+	}
+
+	// Addon Packages: buying a package for a level the member already has.
+	// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Read-only, same check as Addon Packages.
+	if ( function_exists( 'pmproap_pmpro_checkout_level' ) && ! empty( $_REQUEST['ap'] ) && ! empty( get_post_meta( intval( $_REQUEST['ap'] ), '_pmproap_price', true ) ) && pmpro_hasMembershipLevel( $level->id ) ) {
+		return true;
+	}
+
+	return false;
+}
 
 /**
  * Set the date that the first recurring payment will be charged.
