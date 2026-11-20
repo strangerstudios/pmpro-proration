@@ -395,12 +395,22 @@ function pmprorate_membership_pre_membership_expiry( $user_id, $level_id ) {
 			continue;
 		}
 
+		// If the downgrade's subscription was cancelled (ex. the member cancelled from the Cancel page), don't give them the new level.
+		// Leave the downgrade pending so that it is marked as lost_original_level when the old level expires.
+		$downgrade_order        = MemberOrder::get_order( $downgrade->downgrade_order_id );
+		$downgrade_subscription = empty( $downgrade_order ) ? null : $downgrade_order->get_subscription();
+		if ( ! empty( $downgrade_subscription ) && 'active' !== $downgrade_subscription->get_status() ) {
+			continue;
+		}
+
 		// Process the downgrade.
 		$downgrade_processed = $downgrade->process();
 	}
 
 	// Now that their level is downgraded, it should not be expired, but we still want to skip the expiration email.
-	add_action( 'pmpro_send_expiration_email', 'pmprorate_send_expiration_email' );
+	if ( $downgrade_processed ) {
+		add_action( 'pmpro_send_expiration_email', 'pmprorate_send_expiration_email' );
+	}
 }
 
 /**
