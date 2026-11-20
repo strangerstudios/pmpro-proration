@@ -278,7 +278,8 @@ function pmprorate_pmpro_checkout_level( $level ) {
 	$per_left   = max( 1 - $per_passed, 0 );
 
 	// Get the credit for the remaining time on the old level.
-	$credit = $prev_order->subtotal * $per_left;
+	// If the most recent payment was refunded, the member has not paid for this period, so there is no credit.
+	$credit = ( 'refunded' === $prev_order->status ) ? 0 : $prev_order->subtotal * $per_left;
 
 	// If changing to a level with a different payment period, keep the "next payment date" the same.
 	if ( pmprorate_have_same_payment_period( $clevel, $level ) ) {
