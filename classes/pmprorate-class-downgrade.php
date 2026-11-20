@@ -426,6 +426,8 @@ class PMProrate_Downgrade {
 			$email_admin->data = $data;
 			$email_admin->sendEmail();
 		}
+
+		return true;
 	}
 
 	/**
