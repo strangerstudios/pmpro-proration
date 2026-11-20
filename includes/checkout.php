@@ -87,7 +87,7 @@ function pmprorate_have_same_payment_period( $old, $new ) {
 		}
 
 		$corrected_old_level = new stdClass();
-		$corrected_old_level->id           = $current_subscription[0]->get_membership_id();
+		$corrected_old_level->id           = $current_subscription[0]->get_membership_level_id();
 		$corrected_old_level->cycle_number = $current_subscription[0]->get_cycle_number();
 		$corrected_old_level->cycle_period = $current_subscription[0]->get_cycle_period();
 
